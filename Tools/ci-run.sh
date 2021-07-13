@@ -114,8 +114,10 @@ fi
 
 if [[ "$OSTYPE" == "msys*" ]]; then  # for MSVC cl
   export CFLAGS="-O0 -ggdb /Wall /WX $EXTRA_CFLAGS"
+  echo "BUILDING FOR WINDOWS" ;;
 else
   export CFLAGS="-O0 -ggdb -Wall -Wextra $EXTRA_CFLAGS"
+  echo "BUILDING NOT FOR WINDOWS" ;;
 fi
 
 python runtests.py \
