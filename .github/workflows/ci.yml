@@ -175,6 +175,15 @@ jobs:
             backend: cpp
             env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
 
+          # Ubuntu sub-jobs:
+          # ================
+          # GCC 11
+          - os: windows-latest
+            python-version: 3.9
+            backend: c
+            env: { GCC_VERSION: 11 }
+            extra_hash: "-gcc11"
+
     # This defaults to 360 minutes (6h) which is way too long and if a test gets stuck, it can block other pipelines.
     # From testing, the runs tend to take ~20 minutes, so a limit of 30 minutes should be enough. This can always be
     # changed in the future if needed.
