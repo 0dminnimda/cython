@@ -112,7 +112,12 @@ elif [ -n "${PYTHON_VERSION##pypy*}" ]; then
   if $PYTHON_DBG -V >&2; then CFLAGS="-O0 -ggdb" $PYTHON_DBG runtests.py -vv --no-code-style Debugger --backends=$BACKEND; fi;
 fi
 
-export CFLAGS="-O0 -ggdb -Wall -Wextra $EXTRA_CFLAGS"
+if [ "$MSVC" ]; then
+  export CFLAGS="-O0 -ggdb /Wall /WX $EXTRA_CFLAGS"
+else
+  export CFLAGS="-O0 -ggdb -Wall -Wextra $EXTRA_CFLAGS"
+fi
+
 python runtests.py \
   -vv $STYLE_ARGS \
   -x Debugger \
