@@ -97,11 +97,11 @@ jobs:
           #   extra_hash: "-typespecs"
           #   allowed_failure: true
           # Stackless
-          - os: ubuntu-18.04
-            python-version: 2.7
-            backend: c
-            env: { STACKLESS: true, PY: 2 }
-            extra_hash: "-stackless"
+          # - os: ubuntu-18.04
+          #   python-version: 2.7
+          #   backend: c
+          #   env: { STACKLESS: true, PY: 2 }
+          #   extra_hash: "-stackless"
           - os: ubuntu-18.04
             python-version: 3.6
             backend: c
