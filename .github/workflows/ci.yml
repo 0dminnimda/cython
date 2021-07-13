@@ -37,16 +37,16 @@ jobs:
           # Ubuntu sub-jobs:
           # ================
           # GCC 11
-          - os: ubuntu-18.04
-            python-version: 3.9
-            backend: c
-            env: { GCC_VERSION: 11 }
-            extra_hash: "-gcc11"
-          - os: ubuntu-18.04
-            python-version: 3.9
-            backend: cpp
-            env: { GCC_VERSION: 11 }
-            extra_hash: "-gcc11"
+          # - os: ubuntu-18.04
+          #   python-version: 3.9
+          #   backend: c
+          #   env: { GCC_VERSION: 11 }
+          #   extra_hash: "-gcc11"
+          # - os: ubuntu-18.04
+          #   python-version: 3.9
+          #   backend: cpp
+          #   env: { GCC_VERSION: 11 }
+          #   extra_hash: "-gcc11"
           # Linting
           # - os: ubuntu-18.04
           #   python-version: 3.7
@@ -167,14 +167,14 @@ jobs:
           #   python-version: 3.8
           #   backend: c
           #   env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
-          - os: macos-10.15
-            python-version: 3.9
-            backend: c
-            env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
-          - os: macos-10.15
-            python-version: 3.9
-            backend: cpp
-            env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
+          # - os: macos-10.15
+          #   python-version: 3.9
+          #   backend: c
+          #   env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
+          # - os: macos-10.15
+          #   python-version: 3.9
+          #   backend: cpp
+          #   env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
 
           # Windows sub-jobs:
           # ================
