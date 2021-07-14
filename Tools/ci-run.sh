@@ -93,12 +93,10 @@ fi
 ccache -s 2>/dev/null || true
 export PATH="/usr/lib/ccache:$PATH"
 
-if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC cl
-  WXFLAGs="/Wall /WX"
-  echo "BUILDING FOR WINDOWS" ;
+if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC clang
+  WXFLAGs="/Wall"
 else
   WXFLAGs="-Wall -Wextra"
-  echo "BUILDING NOT FOR WINDOWS, FOR $OSTYPE" ;
 fi
 
 if [ "$NO_CYTHON_COMPILE" != "1" -a -n "${PYTHON_VERSION##pypy*}" ]; then
