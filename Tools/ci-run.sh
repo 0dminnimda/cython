@@ -98,7 +98,7 @@ if [[ "$OSTYPE" == "msys*" ]]; then  # for MSVC cl
   echo "BUILDING FOR WINDOWS" ;
 else
   WXFLAGs="-Wall -Wextra"
-  echo "BUILDING NNOT FOR WINDOWS" ;
+  echo "BUILDING NOT FOR WINDOWS, FOR $OSTYPE" ;
 fi
 
 if [ "$NO_CYTHON_COMPILE" != "1" -a -n "${PYTHON_VERSION##pypy*}" ]; then
