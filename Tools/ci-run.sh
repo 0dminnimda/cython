@@ -94,13 +94,15 @@ ccache -s 2>/dev/null || true
 export PATH="/usr/lib/ccache:$PATH"
 
 if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC clang
-  WXFLAGs="/Wall"
+  WARNFLAGS="/Wall"
+  GFLAG="-g"
 else
-  WXFLAGs="-Wall -Wextra"
+  WARNFLAGS="-Wall -Wextra"
+  GFLAG="-ggdb"
 fi
 
 if [ "$NO_CYTHON_COMPILE" != "1" -a -n "${PYTHON_VERSION##pypy*}" ]; then
-  CFLAGS="-O2 -ggdb $WXFLAGs $(python -c 'import sys; print("-fno-strict-aliasing" if sys.version_info[0] == 2 else "")')" \
+  CFLAGS="-O2 $GFLAG $WARNFLAGS $(python -c 'import sys; print("-fno-strict-aliasing" if sys.version_info[0] == 2 else "")')" \
   python setup.py build_ext -i \
           $(if [ "$COVERAGE" == "1" ]; then echo " --cython-coverage"; fi) \
           $(python -c 'import sys; print("-j5" if sys.version_info >= (3,5) else "")') \
@@ -118,7 +120,7 @@ elif [ -n "${PYTHON_VERSION##pypy*}" ]; then
   if $PYTHON_DBG -V >&2; then CFLAGS="-O0 -ggdb" $PYTHON_DBG runtests.py -vv --no-code-style Debugger --backends=$BACKEND; fi;
 fi
 
-export CFLAGS="-O0 -ggdb $WXFLAGs $EXTRA_CFLAGS"
+export CFLAGS="-O0 $GFLAG $WARNFLAGS $EXTRA_CFLAGS"
 
 python runtests.py \
   -vv $STYLE_ARGS \
