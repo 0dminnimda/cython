@@ -11,6 +11,7 @@ else
 fi
 
 # Set up compilers
+echo "Setting up compilers"
 if [[ $OSTYPE == "linux-gnu"* && "$TEST_CODE_STYLE" != "1" ]]; then
   echo "Installing requirements [apt]"
   sudo apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
@@ -37,10 +38,12 @@ elif [[ $OSTYPE == "darwin"* ]]; then
 
 # elif [[ $OSTYPE == "msys" ]]; then
 # pass
-else
-  exit 1 # Unexpected OS
-fi
 
+else
+  echo "Unexpected OS"
+  exit 1
+fi
+echo "Configured for $OSTYPE: '$OS_NAME'"
 
 # Set up miniconda
 if [[ $STACKLESS == "true" ]]; then
@@ -104,6 +107,7 @@ else
 fi
 
 # Run tests
+echo "Running tests"
 ccache -s 2>/dev/null || true
 export PATH="/usr/lib/ccache:$PATH"
 
@@ -131,7 +135,9 @@ if [[ $TEST_CODE_STYLE == "1" ]]; then
 elif [[ $PYTHON_VERSION == "pypy"* ]]; then
   # Run the debugger tests in python-dbg if available (but don't fail, because they currently do fail)
   PYTHON_DBG="python$( python -c 'import sys; print("%d.%d" % sys.version_info[:2])' )-dbg"
-  if $PYTHON_DBG -V >&2; then CFLAGS="-O0 -ggdb" $PYTHON_DBG runtests.py -vv --no-code-style Debugger --backends=$BACKEND; fi;
+  if $PYTHON_DBG -V >&2; then
+    CFLAGS="-O0 -ggdb" $PYTHON_DBG runtests.py -vv --no-code-style Debugger --backends=$BACKEND
+  fi
 fi
 
 export CFLAGS="-O0 $GFLAG $WARNFLAGS $EXTRA_CFLAGS"
