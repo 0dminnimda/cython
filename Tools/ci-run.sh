@@ -122,7 +122,7 @@ if [[ $NO_CYTHON_COMPILE != "1" && $PYTHON_VERSION == "pypy"* ]]; then
   $(python -c 'import sys; print("-j5" if sys.version_info >= (3,5) else "")') \
   || exit 1
   if [[ -z $COVERAGE && -z $STACKLESS && -z $LIMITED_API && -z $EXTRA_CFLAGS && -n ${BACKEND//*cpp*} ]]; then
-  python setup.py bdist_wheel || exit 1
+    python setup.py bdist_wheel || exit 1
   fi
 fi
 
@@ -137,13 +137,13 @@ fi
 export CFLAGS="-O0 $GFLAG $WARNFLAGS $EXTRA_CFLAGS"
 
 python runtests.py \
--vv $STYLE_ARGS \
--x Debugger \
---backends=$BACKEND \
-$LIMITED_API \
-$EXCLUDE \
-$(if [[ $COVERAGE == "1" ]]; then echo " --coverage --coverage-html --cython-only"; fi) \
-$(if [[ -z $TEST_CODE_STYLE ]]; then echo " -j7 "; fi)
+  -vv $STYLE_ARGS \
+  -x Debugger \
+  --backends=$BACKEND \
+  $LIMITED_API \
+  $EXCLUDE \
+  $(if [[ $COVERAGE == "1" ]]; then echo " --coverage --coverage-html --cython-only"; fi) \
+  $(if [[ $TEST_CODE_STYLE != "1" ]]; then echo " -j7 "; fi)
 
 EXIT_CODE=$?
 
