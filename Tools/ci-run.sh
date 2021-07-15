@@ -12,7 +12,7 @@ fi
 
 # Set up compilers
 echo "Setting up compilers"
-if [[ $OSTYPE == "linux-gnu"* && "$TEST_CODE_STYLE" != "1" ]]; then
+if [[ $OSTYPE == "linux"* && "$TEST_CODE_STYLE" != "1" ]]; then
   echo "Installing requirements [apt]"
   sudo apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
   sudo apt update -y -q
@@ -41,7 +41,7 @@ elif [[ $OSTYPE == "msys" ]]; then
   export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
 
 else
-  echo "Unexpected OS"
+  echo "Unexpected OS $OSTYPE: '$OS_NAME'"
   exit 1
 fi
 echo "Configured for $OSTYPE: '$OS_NAME'"
