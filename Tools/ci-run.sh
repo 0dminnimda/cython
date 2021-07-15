@@ -80,7 +80,7 @@ elif [[ $PYTHON_VERSION == "3."[45]* ]]; then
 else
   python -m pip install -U pip setuptools wheel || exit 1
 
-  if [[ $PYTHON_VERSION == *"-dev" ]]; then
+  if [[ $PYTHON_VERSION == *"-dev" || $COVERAGE == "1" ]]; then
     python -m pip install -r test-requirements.txt || exit 1
 
     if [[ $PYTHON_VERSION == "pypy"* && $PYTHON_VERSION == "3."[4789]* ]]; then
