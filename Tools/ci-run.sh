@@ -36,8 +36,9 @@ elif [[ $OSTYPE == "darwin"* ]]; then
   export CC="clang -Wno-deprecated-declarations"
   export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
 
-# elif [[ $OSTYPE == "msys" ]]; then
-# pass
+elif [[ $OSTYPE == "msys" ]]; then
+  export CC="clang -Wno-deprecated-declarations"
+  export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
 
 else
   echo "Unexpected OS"
@@ -111,13 +112,13 @@ echo "Running tests"
 ccache -s 2>/dev/null || true
 export PATH="/usr/lib/ccache:$PATH"
 
-if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC clang
-  WARNFLAGS="/Wall"
-  GFLAG="-g"
-else
-  WARNFLAGS="-Wall -Wextra"
-  GFLAG="-ggdb"
-fi
+# if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC clang
+#   WARNFLAGS="/Wall"
+#   GFLAG="-g"
+# else
+WARNFLAGS="-Wall -Wextra"
+GFLAG="-ggdb"
+# fi
 
 if [[ $NO_CYTHON_COMPILE != "1" && $PYTHON_VERSION == "pypy"* ]]; then
   CFLAGS="-O2 $GFLAG $WARNFLAGS $(python -c 'import sys; print("-fno-strict-aliasing" if sys.version_info[0] == 2 else "")')" \
