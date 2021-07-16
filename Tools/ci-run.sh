@@ -64,6 +64,21 @@ else
       # setenv cl=$CXX # runtests.get_cc_version hack
     fi
 
+    export OPT=""
+    export PY_CFLAGS=""
+    export PY_CORE_CFLAGS=""
+    export CC="gcc"
+    export CXX="g++"
+    export BASECFLAGS=""
+    export CCSHARED="-fPIC"
+    export LDSHARED="gcc -shared"
+    export CPP=""
+    export CPPFLAGS=""
+    export BLDSHARED=""
+    export CONFIGURE_LDFLAGS=""
+    export LDFLAGS=""
+    export PY_LDFLAGS=""
+
   else
     echo "Unexpected OS $OSTYPE: '$OS_NAME'"
     exit 1
