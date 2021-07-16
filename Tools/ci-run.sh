@@ -57,11 +57,13 @@ if [[ $STACKLESS == "true" ]]; then
   conda install --quiet --yes stackless || exit 1
 fi
 
+PYTHON_SYS_VERSION=$(python -c 'import sys; print(sys.version)')
+
 # Log versions in use
 echo "===================="
 echo "|VERSIONS INSTALLED|"
 echo "===================="
-python -c 'import sys; print("Python %s" % (sys.version,))'
+echo "Python $PYTHON_SYS_VERSION"
 if [[ $CC ]]; then
   which ${CC%% *}
   ${CC%% *} --version
@@ -117,10 +119,10 @@ ccache -s 2>/dev/null || true
 export PATH="/usr/lib/ccache:$PATH"
 
 # if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC clang
-#   WARNFLAGS="/Wall"
+#   WARNARGS="/Wall"
 #   GFLAG="-g"
 # else
-WARNFLAGS="-Wall -Wextra"
+WARNARGS="-Wall -Wextra"
 GFLAG="-ggdb"
 # fi
 
@@ -130,12 +132,17 @@ if [[ $COVERAGE == "1" ]]; then
 fi
 
 if [[ $NO_CYTHON_COMPILE != "1" && $PYTHON_VERSION == "pypy"* ]]; then
-  CFLAGS="-O2 $GFLAG $WARNFLAGS $(python -c 'import sys; print("-fno-strict-aliasing" if sys.version_info[0] == 2 else "")')" \
-  python setup.py build_ext -i \
-  $(if [[ $COVERAGE == "1" ]]; then echo " --cython-coverage"; fi) \
-  $(python -c 'import sys; print("-j5" if sys.version_info >= (3,5) else "")') \
-  || exit 1
-  if [[ -z $COVERAGE && -z $STACKLESS && -z $LIMITED_API && -z $EXTRA_CFLAGS && -n ${BACKEND//*cpp*} ]]; then
+  if [[ $PYTHON_VERSION == "pypy-2"* ]]; then
+    ALIASING="$-fno-strict-aliasing"
+  fi
+  if [[ $PYTHON_SYS_VERSION > "3.5" || $PYTHON_SYS_VERSION == "3.5"* ]]; then
+    SETUP_ARGS="-j5"
+  fi
+
+  CFLAGS="-O2 $GFLAG $WARNARGS $ALIASING" \
+    python setup.py build_ext -i $COVERAGE_ARGS $SETUP_ARGS || exit 1
+
+  if [[ $COVERAGE != "1" && $STACKLESS != "true" && -z $LIMITED_API && -z $EXTRA_CFLAGS && $BACKEND_IS_CPP == false ]]; then
     python setup.py bdist_wheel || exit 1
   fi
 fi
@@ -150,7 +157,7 @@ elif [[ $PYTHON_VERSION == "pypy"* ]]; then
   fi
 fi
 
-export CFLAGS="-O0 $GFLAG $WARNFLAGS $EXTRA_CFLAGS"
+export CFLAGS="-O0 $GFLAG $WARNARGS $EXTRA_CFLAGS"
 
 python runtests.py \
   -vv $STYLE_ARGS \
