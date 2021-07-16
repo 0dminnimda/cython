@@ -52,13 +52,13 @@ else
 
     # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
 
-    COMPILER="--compiler=mingw32"
+    COMPILER="--compiler=clang"
 
-    export CC="gcc"
+    export CC="clang"
     # export CC="x86_64-w64-mingw32-gcc"
     # setenv cl=$CC # runtests.get_cc_version hack
     if [[ $BACKEND_IS_CPP = true ]]; then
-      export CXX="g++"
+      export CXX="clang++"
       # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
       # export CXX="x86_64-w64-mingw32-g++"
       # setenv cl=$CXX # runtests.get_cc_version hack
@@ -67,11 +67,9 @@ else
     export OPT=""
     export PY_CFLAGS=""
     export PY_CORE_CFLAGS=""
-    export CC="gcc"
-    export CXX="g++"
     export BASECFLAGS=""
     export CCSHARED="-fPIC"
-    export LDSHARED="gcc -shared"
+    export LDSHARED="clang -shared"
     export CPP=""
     export CPPFLAGS=""
     export BLDSHARED=""
