@@ -71,7 +71,7 @@ echo "===================="
 
 # Install python requirements
 echo "Installing requirements [python]"
-if [[ $PYTHON_VERSION == "2.7" ]]; then
+if [[ $PYTHON_VERSION == "2.7"* ]]; then
   pip install wheel || exit 1
   pip install -r test-requirements-27.txt || exit 1
 elif [[ $PYTHON_VERSION == "3."[45]* ]]; then
@@ -93,6 +93,7 @@ if [[ $TEST_CODE_STYLE == "1" ]]; then
   STYLE_ARGS="--no-unit --no-doctest --no-file --no-pyregr --no-examples";
   python -m pip install -r doc-requirements.txt || exit 1
 else
+  RUNTESTS_ARGS="$RUNTESTS_ARGS -j7"
   STYLE_ARGS="--no-code-style";
   
   # Install more requirements
@@ -119,6 +120,11 @@ export PATH="/usr/lib/ccache:$PATH"
 WARNFLAGS="-Wall -Wextra"
 GFLAG="-ggdb"
 # fi
+
+if [[ $COVERAGE == "1" ]]; then
+  COVERAGE_ARGS="--cython-coverage"
+  RUNTESTS_ARGS="$RUNTESTS_ARGS --coverage --coverage-html --cython-only"
+fi
 
 if [[ $NO_CYTHON_COMPILE != "1" && $PYTHON_VERSION == "pypy"* ]]; then
   CFLAGS="-O2 $GFLAG $WARNFLAGS $(python -c 'import sys; print("-fno-strict-aliasing" if sys.version_info[0] == 2 else "")')" \
@@ -147,10 +153,7 @@ python runtests.py \
   -vv $STYLE_ARGS \
   -x Debugger \
   --backends=$BACKEND \
-  $LIMITED_API \
-  $EXCLUDE \
-  $(if [[ $COVERAGE == "1" ]]; then echo " --coverage --coverage-html --cython-only"; fi) \
-  $(if [[ $TEST_CODE_STYLE != "1" ]]; then echo " -j7 "; fi)
+  $LIMITED_API $EXCLUDE $RUNTESTS_ARGS
 
 EXIT_CODE=$?
 
