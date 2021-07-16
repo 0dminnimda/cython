@@ -29,6 +29,11 @@ jobs:
         # python-version: [2.7, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10-dev]
         # env: [{}]
 
+        os: [ubuntu-18.04, windows-latest]
+        backend: [c, cpp]
+        python-version: [3.9]
+        env: [{}]
+
         include:
           # Temporary - Allow failure on all Python -dev jobs until they are considered stable
           #- python-version: 3.10-dev
@@ -176,16 +181,16 @@ jobs:
           #   backend: cpp
           #   env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
 
-          # Windows sub-jobs:
-          # ================
-          - os: windows-latest
-            python-version: 3.9
-            backend: c
-            env: {}
-          - os: windows-latest
-            python-version: 3.9
-            backend: cpp
-            env: {}
+          # # Windows sub-jobs:
+          # # ================
+          # - os: windows-latest
+          #   python-version: 3.9
+          #   backend: c
+          #   env: {}
+          # - os: windows-latest
+          #   python-version: 3.9
+          #   backend: cpp
+          #   env: {}
 
     # This defaults to 360 minutes (6h) which is way too long and if a test gets stuck, it can block other pipelines.
     # From testing, the runs tend to take ~20 minutes, so a limit of 30 minutes should be enough. This can always be
