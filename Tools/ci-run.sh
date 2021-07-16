@@ -54,12 +54,12 @@ else
 
     export CC="gcc"
     # export CC="x86_64-w64-mingw32-gcc"
-    # setenv msvc=$(which $CC) # runtests.get_cc_version hack
+    setenv cl=$CC # runtests.get_cc_version hack
     if [[ $BACKEND_IS_CPP = true ]]; then
       export CXX="g++"
       # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
       # export CXX="x86_64-w64-mingw32-g++"
-      # setenv msvc=$(which $CXX) # runtests.get_cc_version hack?
+      setenv cl=$CXX # runtests.get_cc_version hack
     fi
 
   else
