@@ -353,7 +353,7 @@ def get_cc_version(language):
     """
     from Cython.Build.BuildExecutable import get_config_var
 
-    warnings.warn(sysconfig.get_config_vars())
+    warnings.warn(str(sysconfig.get_config_vars()))
 
     if language == 'cpp':
         cc = get_config_var('CXX', os.environ.get('CXX', ''))
