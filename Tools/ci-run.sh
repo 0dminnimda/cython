@@ -4,47 +4,50 @@ GCC_VERSION=${GCC_VERSION:=8}
 
 if [[ $BACKEND == *"cpp"* ]]; then
   BACKEND_IS_CPP=true
-  ALTERNATIVE_FLAGS=" --slave /usr/bin/g++ g++ /usr/bin/g++-$GCC_VERSION"
+  ALTERNATIVE_ARGS="--slave /usr/bin/g++ g++ /usr/bin/g++-$GCC_VERSION"
 else
   BACKEND_IS_CPP=false
-  ALTERNATIVE_FLAGS=""
 fi
 
 # Set up compilers
-echo "Setting up compilers"
-if [[ $OSTYPE == "linux"* && "$TEST_CODE_STYLE" != "1" ]]; then
-  echo "Installing requirements [apt]"
-  sudo apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
-  sudo apt update -y -q
-  sudo apt install -y -q ccache gdb python-dbg python3-dbg gcc-$GCC_VERSION || exit 1
-
-  if [[ $BACKEND_IS_CPP = true ]]; then
-    sudo apt install -y -q g++-$GCC_VERSION || exit 1
-  fi
-  sudo /usr/sbin/update-ccache-symlinks
-  echo "/usr/lib/ccache" >> $GITHUB_PATH # export ccache to path
-
-  sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $(echo $ALTERNATIVE_FLAGS)
-
-  export CC="gcc"
-  if [[ $BACKEND_IS_CPP = true ]]; then
-    sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
-    export CXX="g++"
-  fi
-
-elif [[ $OSTYPE == "darwin"* ]]; then
-  export CC="clang -Wno-deprecated-declarations"
-  export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
-
-elif [[ $OSTYPE == "msys" ]]; then
-  export CC="clang -Wno-deprecated-declarations"
-  export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
-
+if [[ "$TEST_CODE_STYLE" != "1" ]]; then
+  echo "Skipping compiler setup"
 else
-  echo "Unexpected OS $OSTYPE: '$OS_NAME'"
-  exit 1
+  echo "Setting up compiler"
+  if [[ $OSTYPE == "linux-gnu"* ]]; then
+    echo "Installing requirements [apt]"
+    sudo apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
+    sudo apt update -y -q
+    sudo apt install -y -q ccache gdb python-dbg python3-dbg gcc-$GCC_VERSION || exit 1
+
+    if [[ $BACKEND_IS_CPP = true ]]; then
+      sudo apt install -y -q g++-$GCC_VERSION || exit 1
+    fi
+    sudo /usr/sbin/update-ccache-symlinks
+    echo "/usr/lib/ccache" >> $GITHUB_PATH # export ccache to path
+
+    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
+
+    export CC="gcc"
+    if [[ $BACKEND_IS_CPP = true ]]; then
+      sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
+      export CXX="g++"
+    fi
+
+  elif [[ $OSTYPE == "darwin"* ]]; then
+    export CC="clang -Wno-deprecated-declarations"
+    export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
+
+  elif [[ $OSTYPE == "msys" ]]; then
+    export CC="clang -Wno-deprecated-declarations"
+    export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
+
+  else
+    echo "Unexpected OS $OSTYPE: '$OS_NAME'"
+    exit 1
+  fi
+  echo "Configured for $OSTYPE: '$OS_NAME'"
 fi
-echo "Configured for $OSTYPE: '$OS_NAME'"
 
 # Set up miniconda
 if [[ $STACKLESS == "true" ]]; then
