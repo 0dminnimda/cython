@@ -358,6 +358,9 @@ def get_cc_version(language):
     else:
         cc = get_config_var('CC', os.environ.get('CC', ''))
 
+    if not cc and os.name == "nt":
+        cc = "unix"
+
     if not cc:
         from distutils import ccompiler
         cc = ccompiler.get_default_compiler()
