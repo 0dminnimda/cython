@@ -80,13 +80,12 @@ echo "===================="
 echo "|VERSIONS INSTALLED|"
 echo "===================="
 echo "Python $PYTHON_SYS_VERSION"
-if [[ $CC ]]; then
-  which ${CC%% *}
-  ${CC%% *} --version
-fi
-if [[ $CXX ]]; then
+if [[ $BACKEND_IS_CPP = true ]]; then
   which ${CXX%% *}
   ${CXX%% *} --version
+else
+  which ${CC%% *}
+  ${CC%% *} --version
 fi
 echo "===================="
 
