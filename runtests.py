@@ -332,8 +332,8 @@ def update_cpp17_extension(ext):
             # which clang warns about in C++17 mode.
             ext.extra_compile_args.append('-Wno-register')
         if sys.platform == "darwin":
-          ext.extra_compile_args.append("-stdlib=libc++")
-          ext.extra_compile_args.append("-mmacosx-version-min=10.13")
+            ext.extra_compile_args.append("-stdlib=libc++")
+            ext.extra_compile_args.append("-mmacosx-version-min=10.13")
         return ext
 
     return EXCLUDE_EXT
