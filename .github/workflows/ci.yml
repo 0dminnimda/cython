@@ -47,12 +47,12 @@ jobs:
           #   backend: cpp
           #   env: { GCC_VERSION: 11 }
           #   extra_hash: "-gcc11"
-          # Linting
-          - os: ubuntu-18.04
-            python-version: 3.7
-            backend: "c,cpp"
-            env: { TEST_CODE_STYLE: 1, NO_CYTHON_COMPILE: 1 }
-            extra_hash: "-codestyle"
+          # # Linting
+          # - os: ubuntu-18.04
+          #   python-version: 3.7
+          #   backend: "c,cpp"
+          #   env: { TEST_CODE_STYLE: 1, NO_CYTHON_COMPILE: 1 }
+          #   extra_hash: "-codestyle"
           # # Limited API
           # - os: ubuntu-18.04
           #   python-version: 3.6
@@ -133,12 +133,12 @@ jobs:
           #   env: { NO_CYTHON_COMPILE: 1, EXCLUDE: "--listfile=tests/pypy_bugs.txt bugs" }
           #   allowed_failure: true
           #   extra_hash: "-allowed_failures"
-          # Coverage - Disabled due to taking too long to run
-          - os: ubuntu-18.04
-            python-version: 3.7
-            backend: "c,cpp"
-            env: { COVERAGE: 1 }
-            extra_hash: '-coverage'
+          # # Coverage - Disabled due to taking too long to run
+          # - os: ubuntu-18.04
+          #   python-version: 3.7
+          #   backend: "c,cpp"
+          #   env: { COVERAGE: 1 }
+          #   extra_hash: '-coverage'
 
           # # MacOS sub-jobs
           # # ==============
@@ -241,60 +241,60 @@ jobs:
           if-no-files-found: ignore
 
 
-  pycoverage:
-    runs-on: ubuntu-18.04
+  # pycoverage:
+  #   runs-on: ubuntu-18.04
 
-    env:
-      BACKEND: c,cpp
-      OS_NAME: ubuntu-18.04
-      PYTHON_VERSION: 3.9
+  #   env:
+  #     BACKEND: c,cpp
+  #     OS_NAME: ubuntu-18.04
+  #     PYTHON_VERSION: 3.9
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 1
 
-      - name: Setup python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
+  #     - name: Setup python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.9
 
-      - name: Run Coverage
-        env: { COVERAGE: 1, NO_CYTHON_COMPILE: 1 }
-        run: bash ./Tools/ci-run.sh
+  #     - name: Run Coverage
+  #       env: { COVERAGE: 1, NO_CYTHON_COMPILE: 1 }
+  #       run: bash ./Tools/ci-run.sh
         
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v2
-        with:
-          name: pycoverage_html
-          path: coverage-report-html
+  #     - name: Upload Coverage Report
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: pycoverage_html
+  #         path: coverage-report-html
 
-  cycoverage:
-    runs-on: ubuntu-18.04
+  # cycoverage:
+  #   runs-on: ubuntu-18.04
 
-    env:
-      BACKEND: c,cpp
-      OS_NAME: ubuntu-18.04
-      PYTHON_VERSION: 3.9
+  #   env:
+  #     BACKEND: c,cpp
+  #     OS_NAME: ubuntu-18.04
+  #     PYTHON_VERSION: 3.9
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
+  #   steps:
+  #     - name: Checkout repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         fetch-depth: 1
 
-      - name: Setup python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.9
+  #     - name: Setup python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: 3.9
 
-      - name: Run Coverage
-        env: { COVERAGE: 1 }
-        run: bash ./Tools/ci-run.sh
+  #     - name: Run Coverage
+  #       env: { COVERAGE: 1 }
+  #       run: bash ./Tools/ci-run.sh
 
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v2
-        with:
-          name: cycoverage_html
-          path: coverage-report-html
+  #     - name: Upload Coverage Report
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: cycoverage_html
+  #         path: coverage-report-html
