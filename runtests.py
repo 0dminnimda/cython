@@ -131,18 +131,6 @@ EXT_DEP_MODULES = {
     'tag:test.support': 'test.support',  # support module for CPython unit tests
 }
 
-ccompiler._default_compilers = (
-    # Platform string mappings
-
-    # on a cygwin built python we can use gcc like an ordinary UNIXish
-    # compiler
-    ('cygwin.*', 'unix'),
-
-    # OS name mappings
-    ('posix', 'unix'),
-    ('nt', 'unix'),
-)
-
 def patch_inspect_isfunction():
     import inspect
     orig_isfunction = inspect.isfunction
