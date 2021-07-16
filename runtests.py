@@ -1204,6 +1204,7 @@ class CythonCompileTestCase(unittest.TestCase):
             build_extension.finalize_options()
             if COMPILER:
                 build_extension.compiler = COMPILER
+                warnings.warn("Compiler = %s" % COMPILER)
 
             ext_compile_flags = CFLAGS[:]
             ext_compile_defines = CDEFS[:]
