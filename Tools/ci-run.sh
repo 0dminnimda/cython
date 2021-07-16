@@ -52,7 +52,7 @@ else
 
     # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
 
-    COMPILER="--compiler mingw64"
+    COMPILER="--compiler mingw32"
 
     export CC="gcc"
     # export CC="x86_64-w64-mingw32-gcc"
