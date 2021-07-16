@@ -70,7 +70,7 @@ except NameError:
 WITH_CYTHON = True
 
 from distutils.command.build_ext import build_ext as _build_ext
-from distutils import sysconfig
+from distutils import sysconfig, ccompiler
 _to_clean = []
 
 @atexit.register
@@ -130,6 +130,18 @@ EXT_DEP_MODULES = {
     'tag:jedi':     'jedi_BROKEN_AND_DISABLED',
     'tag:test.support': 'test.support',  # support module for CPython unit tests
 }
+
+ccompiler._default_compilers = (
+    # Platform string mappings
+
+    # on a cygwin built python we can use gcc like an ordinary UNIXish
+    # compiler
+    ('cygwin.*', 'unix'),
+
+    # OS name mappings
+    ('posix', 'unix'),
+    ('nt', 'unix'),
+)
 
 def patch_inspect_isfunction():
     import inspect
@@ -358,11 +370,10 @@ def get_cc_version(language):
     else:
         cc = get_config_var('CC', os.environ.get('CC', ''))
 
-    if not cc and os.name == "nt":
-        cc = "unix"
+    # if not cc and os.name == "nt":
+    #     cc = "unix"
 
     if not cc:
-        from distutils import ccompiler
         cc = ccompiler.get_default_compiler()
 
     if not cc:
