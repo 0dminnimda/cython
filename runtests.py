@@ -351,7 +351,7 @@ def get_cc_version(language):
     """
         finds gcc version using Popen
     """
-    from Cython.Build import get_config_var
+    from Cython.Build.BuildExecutable import get_config_var
 
     if language == 'cpp':
         cc = get_config_var('CXX', os.environ.get('CXX', ''))
