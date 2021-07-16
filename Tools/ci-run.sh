@@ -53,9 +53,11 @@ else
     # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
 
     export CC="x86_64-w64-mingw32-gcc"
+    export msvc=$CC # runtests.get_cc_version hack
     if [[ $BACKEND_IS_CPP = true ]]; then
       # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
       export CXX="x86_64-w64-mingw32-g++"
+      export msvc=$CXX # runtests.get_cc_version hack
     fi
 
   else
