@@ -10,7 +10,7 @@ else
 fi
 
 # Set up compilers
-if [[ "$TEST_CODE_STYLE" != "1" ]]; then
+if [[ "$TEST_CODE_STYLE" == "1" ]]; then
   echo "Skipping compiler setup"
 else
   echo "Setting up compiler"
