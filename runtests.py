@@ -362,6 +362,8 @@ def get_cc_version(language):
     if not cc:
         return ''
 
+    print("cc =", cc)
+
     # For some reason, cc can be e.g. 'gcc -pthread'
     cc = cc.split()[0]
 
