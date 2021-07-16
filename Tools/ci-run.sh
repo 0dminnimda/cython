@@ -40,22 +40,22 @@ else
 
   elif [[ $OSTYPE == "msys" ]]; then
     echo "Installing requirements [apt]"
-    sudo apt-get install build-essential
-    sudo apt update -y -q
-    sudo apt install -y -q ccache gdb python-dbg python3-dbg gcc-$GCC_VERSION || exit 1
+    # sudo apt-get install -y build-essential
+    # sudo apt update -y -q
+    # sudo apt install -y -q ccache gdb python-dbg python3-dbg gcc-$GCC_VERSION || exit 1
 
+    # if [[ $BACKEND_IS_CPP = true ]]; then
+    #   sudo apt install -y -q g++-$GCC_VERSION || exit 1
+    # fi
+    # sudo /usr/sbin/update-ccache-symlinks
+    # echo "/usr/lib/ccache" >> $GITHUB_PATH # export ccache to path
+
+    # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
+
+    export CC="mingw64-x86_64-gcc-core"
     if [[ $BACKEND_IS_CPP = true ]]; then
-      sudo apt install -y -q g++-$GCC_VERSION || exit 1
-    fi
-    sudo /usr/sbin/update-ccache-symlinks
-    echo "/usr/lib/ccache" >> $GITHUB_PATH # export ccache to path
-
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
-
-    export CC="gcc"
-    if [[ $BACKEND_IS_CPP = true ]]; then
-      sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
-      export CXX="g++"
+      # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
+      export CXX="mingw64-x86_64-gcc-g++"
     fi
 
   else
