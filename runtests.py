@@ -372,6 +372,7 @@ def get_cc_version(language):
 
     # Force english output
     env = os.environ.copy()
+    warnings.warn(list(env.keys()))
     env['LC_MESSAGES'] = 'C'
     try:
         p = subprocess.Popen([cc, "--version"], stderr=subprocess.PIPE, env=env, shell=True)
