@@ -52,14 +52,16 @@ else
 
     # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
 
+    COMPILER="--compiler mingw64"
+
     export CC="gcc"
     # export CC="x86_64-w64-mingw32-gcc"
-    setenv cl=$CC # runtests.get_cc_version hack
+    # setenv cl=$CC # runtests.get_cc_version hack
     if [[ $BACKEND_IS_CPP = true ]]; then
       export CXX="g++"
       # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
       # export CXX="x86_64-w64-mingw32-g++"
-      setenv cl=$CXX # runtests.get_cc_version hack
+      # setenv cl=$CXX # runtests.get_cc_version hack
     fi
 
   else
@@ -182,7 +184,7 @@ python runtests.py \
   -vv $STYLE_ARGS \
   -x Debugger \
   --backends=$BACKEND \
-  $LIMITED_API $EXCLUDE $RUNTESTS_ARGS
+  $LIMITED_API $EXCLUDE $RUNTESTS_ARGS $COMPILER
 
 EXIT_CODE=$?
 
