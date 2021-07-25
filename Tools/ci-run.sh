@@ -39,7 +39,7 @@ else
     export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
 
   elif [[ $OSTYPE == "msys" ]]; then
-    echo "Installing requirements [apt]"
+    # echo "Installing requirements [apt]"
     # sudo apt-get install -y build-essential
     # sudo apt update -y -q
     # sudo apt install -y -q ccache gdb python-dbg python3-dbg gcc-$GCC_VERSION || exit 1
@@ -52,19 +52,19 @@ else
 
     # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
 
-    # COMPILER="--compiler=clang"
+    COMPILER="--compiler=msvc"
 
-    export CC="msvc"
+    export CC="C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30037\\bin\\HostX86\\x64\\cl.exe"
     # export CC="x86_64-w64-mingw32-gcc"
     # setenv cl=$CC # runtests.get_cc_version hack
     if [[ $BACKEND_IS_CPP = true ]]; then
-      export CXX="msvc++"
+      export CXX=$CC
       # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
       # export CXX="x86_64-w64-mingw32-g++"
       # setenv cl=$CXX # runtests.get_cc_version hack
     fi
 
-    BASE_CFLAGS = "/MP"
+    BASE_CFLAGS = "/MP /Yc" # making MSVC compile faster
 
     # export OPT=""
     # export PY_CFLAGS=""
