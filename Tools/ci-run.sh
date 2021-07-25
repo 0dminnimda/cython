@@ -58,7 +58,7 @@ else
     # export CC="x86_64-w64-mingw32-gcc"
     # setenv cl=$CC # runtests.get_cc_version hack
     if [[ $BACKEND_IS_CPP = true ]]; then
-      export CXX="msvc"
+      export CXX="msvc++"
       # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
       # export CXX="x86_64-w64-mingw32-g++"
       # setenv cl=$CXX # runtests.get_cc_version hack
@@ -152,13 +152,13 @@ echo "Running tests"
 ccache -s 2>/dev/null || true
 export PATH="/usr/lib/ccache:$PATH"
 
-# if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC clang
-#   WARNARGS="/Wall"
-#   GFLAG="-g"
-# else
-WARNARGS="-Wall -Wextra"
-GFLAG="-ggdb"
-# fi
+if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC clang
+  WARNARGS="/Wall"
+  GFLAG="/Z7"
+else
+  WARNARGS="-Wall -Wextra"
+  GFLAG="-ggdb"
+fi
 
 if [[ $COVERAGE == "1" ]]; then
   COVERAGE_ARGS="--cython-coverage"
