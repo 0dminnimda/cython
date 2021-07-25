@@ -52,30 +52,30 @@ else
 
     # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
 
-    COMPILER="--compiler=clang"
+    # COMPILER="--compiler=clang"
 
-    export CC="clang"
+    export CC="msvc"
     # export CC="x86_64-w64-mingw32-gcc"
     # setenv cl=$CC # runtests.get_cc_version hack
     if [[ $BACKEND_IS_CPP = true ]]; then
-      export CXX="clang++"
+      export CXX="msvc"
       # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
       # export CXX="x86_64-w64-mingw32-g++"
       # setenv cl=$CXX # runtests.get_cc_version hack
     fi
 
-    export OPT=""
-    export PY_CFLAGS=""
-    export PY_CORE_CFLAGS=""
-    export BASECFLAGS=""
-    export CCSHARED="-fPIC"
-    export LDSHARED="clang -shared"
-    export CPP=""
-    export CPPFLAGS=""
-    export BLDSHARED=""
-    export CONFIGURE_LDFLAGS=""
-    export LDFLAGS=""
-    export PY_LDFLAGS=""
+    # export OPT=""
+    # export PY_CFLAGS=""
+    # export PY_CORE_CFLAGS=""
+    # export BASECFLAGS=""
+    # export CCSHARED="-fPIC"
+    # export LDSHARED="clang -shared"
+    # export CPP=""
+    # export CPPFLAGS=""
+    # export BLDSHARED=""
+    # export CONFIGURE_LDFLAGS=""
+    # export LDFLAGS=""
+    # export PY_LDFLAGS=""
 
   else
     echo "Unexpected OS $OSTYPE: '$OS_NAME'"
