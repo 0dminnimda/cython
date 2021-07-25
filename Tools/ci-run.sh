@@ -64,6 +64,8 @@ else
       # setenv cl=$CXX # runtests.get_cc_version hack
     fi
 
+    BASE_CFLAGS = "/MP"
+
     # export OPT=""
     # export PY_CFLAGS=""
     # export PY_CORE_CFLAGS=""
@@ -152,7 +154,7 @@ echo "Running tests"
 ccache -s 2>/dev/null || true
 export PATH="/usr/lib/ccache:$PATH"
 
-if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC clang
+if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC cl
   WARNARGS="/Wall"
   DEBUG_INFO="/Z7"
   NO_OPTIMIZATION = "/O0"
@@ -175,7 +177,7 @@ if [[ $NO_CYTHON_COMPILE != "1" && $PYTHON_VERSION == "pypy"* ]]; then
     SETUP_ARGS="-j5"
   fi
 
-  CFLAGS="-O2 $DEBUG_INFO $WARNARGS $ALIASING" \
+  CFLAGS="$BASE_CFLAGS -O2 $DEBUG_INFO $WARNARGS $ALIASING" \
     python setup.py build_ext -i $COVERAGE_ARGS $SETUP_ARGS || exit 1
 
   if [[ $COVERAGE != "1" && $STACKLESS != "true" && -z $LIMITED_API && -z $EXTRA_CFLAGS && $BACKEND_IS_CPP == false ]]; then
@@ -189,11 +191,11 @@ elif [[ $PYTHON_VERSION == "pypy"* ]]; then
   # Run the debugger tests in python-dbg if available (but don't fail, because they currently do fail)
   PYTHON_DBG="python$( python -c 'import sys; print("%d.%d" % sys.version_info[:2])' )-dbg"
   if $PYTHON_DBG -V >&2; then
-    CFLAGS="$NO_OPTIMIZATION -ggdb" $PYTHON_DBG runtests.py -vv --no-code-style Debugger --backends=$BACKEND
+    CFLAGS="$BASE_CFLAGS $NO_OPTIMIZATION $DEBUG_INFO" $PYTHON_DBG runtests.py -vv --no-code-style Debugger --backends=$BACKEND
   fi
 fi
 
-export CFLAGS="$NO_OPTIMIZATION $DEBUG_INFO $WARNARGS $EXTRA_CFLAGS"
+export CFLAGS="$BASE_CFLAGS $NO_OPTIMIZATION $DEBUG_INFO $WARNARGS $EXTRA_CFLAGS"
 
 python runtests.py \
   -vv $STYLE_ARGS \
