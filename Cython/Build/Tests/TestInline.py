@@ -26,10 +26,10 @@ class TestInline(CythonTest):
         self.test_kwds['lib_dir'] = lib_dir
 
     def test_simple(self):
-        self.assertEqual(inline("return 1+2", **self.test_kwds), 3)
+        self.assertEqual(inline("return 1+2", **self.test_kwds), 3)  # f
 
     def test_types(self):
-        self.assertEqual(inline("""
+        self.assertEqual(inline("""  # f
             cimport cython
             return cython.typeof(a), cython.typeof(b)
         """, a=1.0, b=[], **self.test_kwds), ('double', 'list object'))
@@ -37,20 +37,20 @@ class TestInline(CythonTest):
     def test_locals(self):
         a = 1
         b = 2
-        self.assertEqual(inline("return a+b", **self.test_kwds), 3)
+        self.assertEqual(inline("return a+b", **self.test_kwds), 3)  # f
 
     def test_globals(self):
-        self.assertEqual(inline("return global_value + 1", **self.test_kwds), global_value + 1)
+        self.assertEqual(inline("return global_value + 1", **self.test_kwds), global_value + 1)  # f
 
     def test_no_return(self):
-        self.assertEqual(inline("""
+        self.assertEqual(inline("""  # f
             a = 1
             cdef double b = 2
             cdef c = []
         """, **self.test_kwds), dict(a=1, b=2.0, c=[]))
 
     def test_def_node(self):
-        foo = inline("def foo(x): return x * x", **self.test_kwds)['foo']
+        foo = inline("def foo(x): return x * x", **self.test_kwds)['foo']  # f
         self.assertEqual(foo(7), 49)
 
     def test_class_ref(self):
@@ -61,7 +61,7 @@ class TestInline(CythonTest):
 
     def test_pure(self):
         import cython as cy
-        b = inline("""
+        b = inline("""  # f
         b = cy.declare(float, a)
         c = cy.declare(cy.pointer(cy.float), &b)
         return b

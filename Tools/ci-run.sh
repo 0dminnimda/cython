@@ -155,7 +155,9 @@ ccache -s 2>/dev/null || true
 export PATH="/usr/lib/ccache:$PATH"
 
 if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC cl
-  WARNARGS="/Wall"
+  # /wd will disable warning
+  # 4711 warns that function `x` selected for automatic inline expansion
+  WARNARGS="/Wall /wd4711"
   DEBUG_INFO="/Z7"
   NO_OPTIMIZATION = "/O0"
 else
