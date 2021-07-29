@@ -55,3 +55,4 @@ pyregr.test_urllibnet
 
 # Inlined generators
 inlined_generator_expressions
+Cython.Build.Tests.TestInline
