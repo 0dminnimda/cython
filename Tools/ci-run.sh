@@ -117,6 +117,7 @@ echo "===================="
 
 # Install python requirements
 echo "Installing requirements [python]"
+python -m pip install --upgrade pip
 if [[ $PYTHON_VERSION == "2.7"* ]]; then
   pip install wheel || exit 1
   pip install -r test-requirements-27.txt || exit 1
