@@ -54,15 +54,15 @@ else
 
     COMPILER="--compiler=msvc"
 
-    export CC="C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30037\\bin\\HostX86\\x64\\cl.exe"
+    # export CC="C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30037\\bin\\HostX86\\x64\\cl.exe"
     # export CC="x86_64-w64-mingw32-gcc"
     # setenv cl=$CC # runtests.get_cc_version hack
-    if [[ $BACKEND_IS_CPP = true ]]; then
-      export CXX=$CC
+    # if [[ $BACKEND_IS_CPP = true ]]; then
+    #   export CXX=$CC
       # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
       # export CXX="x86_64-w64-mingw32-g++"
       # setenv cl=$CXX # runtests.get_cc_version hack
-    fi
+    # fi
 
     BASE_CFLAGS = "/MP /Yc" # making MSVC compile faster
 
