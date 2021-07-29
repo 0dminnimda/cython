@@ -29,9 +29,9 @@ jobs:
         # python-version: [2.7, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10-dev]
         # env: [{}]
 
-        os: [windows-latest]
+        os: [windows-latest, ubuntu-18.04]
         backend: [c, cpp]
-        python-version: [2.7, 3.4, 3.9]
+        python-version: [2.7, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10-dev]
         env: [{}]
 
         include:
@@ -154,9 +154,9 @@ jobs:
           #   env: { COVERAGE: 1 }
           #   extra_hash: '-coverage'
 
-          # # MacOS sub-jobs
-          # # ==============
-          # # (C-only builds are used to create wheels)
+          # MacOS sub-jobs
+          # ==============
+          # (C-only builds are used to create wheels)
           - os: macos-10.15
             python-version: 2.7
             backend: c
@@ -165,22 +165,22 @@ jobs:
             python-version: 2.7
             backend: cpp
             env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
-          # - os: macos-10.15
-          #   python-version: 3.5
-          #   backend: c
-          #   env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
-          # - os: macos-10.15
-          #   python-version: 3.6
-          #   backend: c
-          #   env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
-          # - os: macos-10.15
-          #   python-version: 3.7
-          #   backend: c
-          #   env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
-          # - os: macos-10.15
-          #   python-version: 3.8
-          #   backend: c
-          #   env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
+          - os: macos-10.15
+            python-version: 3.5
+            backend: c
+            env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
+          - os: macos-10.15
+            python-version: 3.6
+            backend: c
+            env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
+          - os: macos-10.15
+            python-version: 3.7
+            backend: c
+            env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
+          - os: macos-10.15
+            python-version: 3.8
+            backend: c
+            env: { MACOSX_DEPLOYMENT_TARGET: 10.14 }
           - os: macos-10.15
             python-version: 3.9
             backend: c
