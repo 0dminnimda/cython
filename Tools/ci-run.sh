@@ -53,6 +53,7 @@ else
     # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
 
     COMPILER="--compiler=msvc"
+    CL="\"C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30037\\bin\\HostX86\\x64\\cl.exe\""
 
     # export CC="C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30037\\bin\\HostX86\\x64\\cl.exe"
     # export CC="x86_64-w64-mingw32-gcc"
@@ -101,12 +102,16 @@ echo "===================="
 echo "|VERSIONS INSTALLED|"
 echo "===================="
 echo "Python $PYTHON_SYS_VERSION"
-if [[ $BACKEND_IS_CPP = true ]]; then
-  which ${CXX%% *}
-  ${CXX%% *} --version
+if [[ $OSTYPE == "msys" ]]; then
+  $CL --verison
 else
-  which ${CC%% *}
-  ${CC%% *} --version
+  if [[ $BACKEND_IS_CPP = true ]]; then
+    which ${CXX%% *}
+    ${CXX%% *} --version
+  else
+    which ${CC%% *}
+    ${CC%% *} --version
+  fi
 fi
 echo "===================="
 
