@@ -70,7 +70,7 @@ except NameError:
 WITH_CYTHON = True
 
 from distutils.command.build_ext import build_ext as _build_ext
-from distutils import sysconfig, ccompiler
+from distutils import sysconfig
 _to_clean = []
 
 @atexit.register
@@ -352,34 +352,30 @@ def get_cc_version(language):
         finds gcc version using Popen
     """
     from Cython.Build.BuildExecutable import get_config_var
+    # _config_vars
 
     warnings.warn(str(sysconfig.get_config_vars()))
 
     if language == 'cpp':
-        cc = get_config_var('CXX', os.environ.get('CXX', ''))
+        cc = sysconfig.get_config_var('CXX')
     else:
-        cc = get_config_var('CC', os.environ.get('CC', ''))
-
-    # if not cc and os.name == "nt":
-    #     cc = "unix"
+        cc = sysconfig.get_config_var('CC')
 
     if not cc:
+        from distutils import ccompiler
         cc = ccompiler.get_default_compiler()
 
     if not cc:
         return ''
-
-    warnings.warn("cc = %s" % cc)
 
     # For some reason, cc can be e.g. 'gcc -pthread'
     cc = cc.split()[0]
 
     # Force english output
     env = os.environ.copy()
-    warnings.warn(str(tuple(env)))
     env['LC_MESSAGES'] = 'C'
     try:
-        p = subprocess.Popen([cc, "--version"], stderr=subprocess.PIPE, env=env, shell=True)
+        p = subprocess.Popen([cc, "-v"], stderr=subprocess.PIPE, env=env)
     except EnvironmentError:
         # Be compatible with Python 3
         warnings.warn("Unable to find the %s compiler: %s: %s" %
@@ -1205,7 +1201,6 @@ class CythonCompileTestCase(unittest.TestCase):
             build_extension.finalize_options()
             if COMPILER:
                 build_extension.compiler = COMPILER
-            warnings.warn("Compiler = %s" % build_extension.compiler)
 
             ext_compile_flags = CFLAGS[:]
             ext_compile_defines = CDEFS[:]
