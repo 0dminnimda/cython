@@ -31,10 +31,19 @@ jobs:
 
         os: [windows-latest]
         backend: [c, cpp]
-        python-version: [3.9]
+        python-version: [2.7, 3.4, 3.9]
         env: [{}]
 
         include:
+          - os: ubuntu-18.04
+            python-version: 3.9
+            backend: c
+            env: {}
+          - os: ubuntu-18.04
+            python-version: 3.9
+            backend: cpp
+            env: {}
+
           # Temporary - Allow failure on all Python -dev jobs until they are considered stable
           #- python-version: 3.10-dev
           #  allowed_failure: true
