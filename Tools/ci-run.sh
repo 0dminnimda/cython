@@ -164,7 +164,7 @@ if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC cl
   # 4711 warns that function `x` selected for automatic inline expansion
   WARNARGS="/Wall /wd4711"
   DEBUG_INFO="/Z7"
-  NO_OPTIMIZATION = "/O0"
+  NO_OPTIMIZATION = "/Od"
 else
   WARNARGS="-Wall -Wextra"
   DEBUG_INFO="-ggdb"
