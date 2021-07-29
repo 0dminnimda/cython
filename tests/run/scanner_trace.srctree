@@ -12,20 +12,10 @@ Cython.Compiler.Scanning.trace_scanner = 1
 
 setup(ext_modules=cythonize("*.pyx"))
 
-if sys.platform == 'darwin' and sys.version_info >= (3, 5):
-    import glob
-    from importlib.util import module_from_spec, spec_from_file_location
-    ext_files = glob.glob("simple*.so") + glob.glob("simple*.pyd")
-    assert ext_files
-    spec = spec_from_file_location('simple', ext_files[0])
-    simple = module_from_spec(spec)
-    spec.loader.exec_module(simple)
-else:
-    # Try to import from the current directory.
-    import os
-    sys.path.insert(0, os.getcwd())
-    import simple
-
+# Try to import from the current directory.
+import os
+sys.path.insert(0, os.getcwd())
+import simple
 
 assert simple.test() == 123
 
@@ -34,3 +24,6 @@ assert simple.test() == 123
 
 def test():
     return 123
+
+
+ci-run.sh: add flags to BASE_CFLAGS
