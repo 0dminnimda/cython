@@ -52,7 +52,7 @@ else
 
     # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
 
-    COMPILER="--compiler=msvc"
+    # COMPILER="--compiler=msvc"
     CL="\"C:/Program\ Files\ (x86)/Microsoft\ Visual\ Studio/2019/Enterprise/VC/Tools/MSVC/14.29.30037/bin/HostX86/x64/cl.exe\""
 
     # export CC="C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30037\\bin\\HostX86\\x64\\cl.exe"
@@ -208,7 +208,7 @@ python runtests.py \
   -vv $STYLE_ARGS \
   -x Debugger \
   --backends=$BACKEND \
-  $LIMITED_API $EXCLUDE $RUNTESTS_ARGS $COMPILER
+  $LIMITED_API $EXCLUDE $RUNTESTS_ARGS # $COMPILER
 
 EXIT_CODE=$?
 
