@@ -5,6 +5,7 @@ cythonize_script_excludes
 cythonize_script_package
 initial_file_path
 package_compilation
+run.scanner_trace.srctree
 
 carray_coercion
 int_float_builtins_as_casts_T400
