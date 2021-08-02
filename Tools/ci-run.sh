@@ -2,88 +2,33 @@
 
 GCC_VERSION=${GCC_VERSION:=8}
 
-if [[ $BACKEND == *"cpp"* ]]; then
-  BACKEND_IS_CPP=true
-  ALTERNATIVE_ARGS="--slave /usr/bin/g++ g++ /usr/bin/g++-$GCC_VERSION"
-else
-  BACKEND_IS_CPP=false
-fi
-
 # Set up compilers
-if [[ "$TEST_CODE_STYLE" == "1" ]]; then
+if [[ $TEST_CODE_STYLE == "1" ]]; then
   echo "Skipping compiler setup"
-else
-  echo "Setting up compiler"
-  if [[ $OSTYPE == "linux-gnu"* ]]; then
-    echo "Installing requirements [apt]"
-    sudo apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
-    sudo apt update -y -q
-    sudo apt install -y -q ccache gdb python-dbg python3-dbg gcc-$GCC_VERSION || exit 1
-
-    if [[ $BACKEND_IS_CPP = true ]]; then
-      sudo apt install -y -q g++-$GCC_VERSION || exit 1
-    fi
-    sudo /usr/sbin/update-ccache-symlinks
-    echo "/usr/lib/ccache" >> $GITHUB_PATH # export ccache to path
-
-    sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
-
-    export CC="gcc"
-    if [[ $BACKEND_IS_CPP = true ]]; then
-      sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
-      export CXX="g++"
-    fi
-
-  elif [[ $OSTYPE == "darwin"* ]]; then
-    export CC="clang -Wno-deprecated-declarations"
-    export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
-
-  elif [[ $OSTYPE == "msys" ]]; then
-    # echo "Installing requirements [apt]"
-    # sudo apt-get install -y build-essential
-    # sudo apt update -y -q
-    # sudo apt install -y -q ccache gdb python-dbg python3-dbg gcc-$GCC_VERSION || exit 1
-
-    # if [[ $BACKEND_IS_CPP = true ]]; then
-    #   sudo apt install -y -q g++-$GCC_VERSION || exit 1
-    # fi
-    # sudo /usr/sbin/update-ccache-symlinks
-    # echo "/usr/lib/ccache" >> $GITHUB_PATH # export ccache to path
-
-    # sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
-
-    COMPILER="--compiler=msvc"
-
-    export CC="C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Tools\\MSVC\\14.29.30037\\bin\\HostX86\\x64\\cl.exe"
-    # export CC="x86_64-w64-mingw32-gcc"
-    # setenv cl=$CC # runtests.get_cc_version hack
-    if [[ $BACKEND_IS_CPP = true ]]; then
-      export CXX=$CC
-      # sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
-      # export CXX="x86_64-w64-mingw32-g++"
-      # setenv cl=$CXX # runtests.get_cc_version hack
-    fi
-
-    BASE_CFLAGS = "/MP /Yc" # making MSVC compile faster
-
-    # export OPT=""
-    # export PY_CFLAGS=""
-    # export PY_CORE_CFLAGS=""
-    # export BASECFLAGS=""
-    # export CCSHARED="-fPIC"
-    # export LDSHARED="clang -shared"
-    # export CPP=""
-    # export CPPFLAGS=""
-    # export BLDSHARED=""
-    # export CONFIGURE_LDFLAGS=""
-    # export LDFLAGS=""
-    # export PY_LDFLAGS=""
-
-  else
-    echo "Unexpected OS $OSTYPE: '$OS_NAME'"
-    exit 1
+elif [[ $OSTYPE == "linux-gnu"* ]]; then
+  echo "Setting up linux compiler"
+  echo "Installing requirements [apt]"
+  sudo apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
+  sudo apt update -y -q
+  sudo apt install -y -q ccache gdb python-dbg python3-dbg gcc-$GCC_VERSION || exit 1
+  if [[ $BACKEND == *"cpp"* ]]; then
+    sudo apt install -y -q g++-$GCC_VERSION || exit 1
+    ALTERNATIVE_ARGS=" --slave /usr/bin/g++ g++ /usr/bin/g++-$GCC_VERSION"
   fi
-  echo "Configured for $OSTYPE: '$OS_NAME'"
+  sudo /usr/sbin/update-ccache-symlinks
+  echo "/usr/lib/ccache" >> $GITHUB_PATH # export ccache to path
+
+  sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VERSION 60 $ALTERNATIVE_ARGS
+
+  export CC="gcc"
+  if [[ $BACKEND == *"cpp"* ]]; then
+    sudo update-alternatives --set g++ /usr/bin/g++-$GCC_VERSION
+    export CXX="g++"
+  fi
+elif [[ $OSTYPE == "darwin"* ]]; then
+  echo "Setting up macos compiler"
+  export CC="clang -Wno-deprecated-declarations"
+  export CXX="clang++ -stdlib=libc++ -Wno-deprecated-declarations"
 fi
 
 # Set up miniconda
@@ -101,10 +46,11 @@ echo "===================="
 echo "|VERSIONS INSTALLED|"
 echo "===================="
 echo "Python $PYTHON_SYS_VERSION"
-if [[ $BACKEND_IS_CPP = true ]]; then
+if [[ $CXX ]]; then
   which ${CXX%% *}
   ${CXX%% *} --version
-else
+fi
+if [[ $CC ]]; then
   which ${CC%% *}
   ${CC%% *} --version
 fi
@@ -131,18 +77,16 @@ else
 fi
 
 if [[ $TEST_CODE_STYLE == "1" ]]; then
-  STYLE_ARGS="--no-unit --no-doctest --no-file --no-pyregr --no-examples";
+  STYLE_ARGS="--no-unit --no-doctest --no-file --no-pyregr --no-examples"
   python -m pip install -r doc-requirements.txt || exit 1
 else
-  RUNTESTS_ARGS="$RUNTESTS_ARGS -j7"
-  STYLE_ARGS="--no-code-style";
-  
+  STYLE_ARGS="--no-code-style"
+
   # Install more requirements
   if [[ $PYTHON_VERSION == *"-dev" ]]; then
-    if [[ $BACKEND_IS_CPP = true ]]; then
+    if [[ $BACKEND == *"cpp"* ]]; then
       echo "WARNING: Currently not installing pythran due to compatibility issues"
       # python -m pip install pythran==0.9.5 || exit 1
-
     elif [[ $PYTHON_VERSION == "pypy"* && $PYTHON_VERSION == "2"* && $PYTHON_VERSION == *"3.4" ]]; then
       python -m pip install mypy || exit 1
     fi
@@ -150,39 +94,44 @@ else
 fi
 
 # Run tests
-echo "Running tests"
+echo "==== Running tests ===="
 ccache -s 2>/dev/null || true
 export PATH="/usr/lib/ccache:$PATH"
 
 if [[ "$OSTYPE" == "msys" ]]; then  # for MSVC cl
   # /wd will disable warning
   # 4711 warns that function `x` selected for automatic inline expansion
-  WARNARGS="/Wall /wd4711"
+  # 4127 warns that conditional expression is constant, should be fixed here https://github.com/cython/cython/pull/4317
+  # (off by default) 5045 warns that Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+  # (off by default) 4820 warns about the code in Python\3.9.6\x64\include ...
+  WARNARGS="/W4 /wd4711 /wd4127 /wd5045 /wd4820"
   DEBUG_INFO="/Z7"
-  NO_OPTIMIZATION = "/O0"
+  NO_OPTIMIZATION="-Od"
 else
   WARNARGS="-Wall -Wextra"
   DEBUG_INFO="-ggdb"
-  NO_OPTIMIZATION = "-O0"
-fi
-
-if [[ $COVERAGE == "1" ]]; then
-  COVERAGE_ARGS="--cython-coverage"
-  RUNTESTS_ARGS="$RUNTESTS_ARGS --coverage --coverage-html --cython-only"
+  NO_OPTIMIZATION="-O0"
 fi
 
 if [[ $NO_CYTHON_COMPILE != "1" && $PYTHON_VERSION == "pypy"* ]]; then
-  if [[ $PYTHON_VERSION == "pypy-2"* ]]; then
-    ALIASING="$-fno-strict-aliasing"
+  if [[ $COVERAGE == "1" ]]; then
+    COVERAGE_ARGS="--cython-coverage"
+  fi
+  if [[ $CYTHON_COMPILE_ALL == "1" ]]; then
+    CYTHON_COMPILE_ALL_FLAGS=" --cython-compile-all"
   fi
   if [[ $PYTHON_SYS_VERSION > "3.5" || $PYTHON_SYS_VERSION == "3.5"* ]]; then
     SETUP_ARGS="-j5"
   fi
+  if [[ $PYTHON_SYS_VERSION == "2"* ]]; then
+    ALIASING="$-fno-strict-aliasing"
+  fi
 
-  CFLAGS="$BASE_CFLAGS -O2 $DEBUG_INFO $WARNARGS $ALIASING" \
-    python setup.py build_ext -i $COVERAGE_ARGS $SETUP_ARGS || exit 1
+  CFLAGS="-O2 $DEBUG_INFO $WARNARGS $ALIASING" \
+    python setup.py build_ext -i \
+    $COVERAGE_ARGS $CYTHON_COMPILE_ALL_FLAGS $SETUP_ARGS || exit 1
 
-  if [[ $COVERAGE != "1" && $STACKLESS != "true" && -z $LIMITED_API && -z $EXTRA_CFLAGS && $BACKEND_IS_CPP == false ]]; then
+  if [[ $COVERAGE != "1" && $STACKLESS != "true" && -z $LIMITED_API && -z $EXTRA_CFLAGS && $BACKEND != *"cpp"* ]]; then
     python setup.py bdist_wheel || exit 1
   fi
 fi
@@ -193,17 +142,25 @@ elif [[ $PYTHON_VERSION == "pypy"* ]]; then
   # Run the debugger tests in python-dbg if available (but don't fail, because they currently do fail)
   PYTHON_DBG="python$( python -c 'import sys; print("%d.%d" % sys.version_info[:2])' )-dbg"
   if $PYTHON_DBG -V >&2; then
-    CFLAGS="$BASE_CFLAGS $NO_OPTIMIZATION $DEBUG_INFO" $PYTHON_DBG runtests.py -vv --no-code-style Debugger --backends=$BACKEND
+    CFLAGS="$NO_OPTIMIZATION $DEBUG_INFO" $PYTHON_DBG runtests.py -vv --no-code-style Debugger --backends=$BACKEND
   fi
 fi
 
-export CFLAGS="$BASE_CFLAGS $NO_OPTIMIZATION $DEBUG_INFO $WARNARGS $EXTRA_CFLAGS"
+if [[ $COVERAGE == "1" ]]; then
+  RUNTESTS_ARGS="$RUNTESTS_ARGS --coverage --coverage-html --cython-only"
+fi
+if [[ $TEST_CODE_STYLE != "1" ]]; then
+  RUNTESTS_ARGS="$RUNTESTS_ARGS -j7"
+fi
 
+export CFLAGS="$NO_OPTIMIZATION $DEBUG_INFO $WARNARGS $EXTRA_CFLAGS"
 python runtests.py \
   -vv $STYLE_ARGS \
   -x Debugger \
   --backends=$BACKEND \
-  $LIMITED_API $EXCLUDE $RUNTESTS_ARGS $COMPILER
+  $LIMITED_API \
+  $EXCLUDE \
+  $RUNTESTS_ARGS
 
 EXIT_CODE=$?
 
