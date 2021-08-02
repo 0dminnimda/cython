@@ -1,5 +1,5 @@
 # mode: run
-# tag: cpp, werror, no-cpp-locals
+# tag: cpp, werror
 # ticket: 3065
 
 # This is intentionally in a file on its own. The issue was that it failed to generate utility-code

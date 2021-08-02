@@ -1,6 +1,5 @@
 # mode: run
-# tag: cpp, cpp17, no-cpp-locals
-# no-cpp-locals because the test is already run with it explicitly set
+# tag: cpp, cpp17
 
 # cython: cpp_locals=True
 
@@ -49,7 +48,7 @@ cdef extern from *:
     C make_C(int) except +  # needs a temp to receive
 
 # this function just makes sure the output from the destructor can be captured by doctest
-cdef void print_C_destructor "print_C_destructor" () with gil:
+cdef void print_C_destructor "print_C_destructor" () nogil:
     print("~C()")
 
 def maybe_assign_infer(assign, value, do_print):
@@ -168,17 +167,8 @@ cdef class HoldsC:
     >>> inst = HoldsC(True, False)
     >>> inst.getCX()
     10
-    >>> access_from_function_with_different_directive(inst)
-    10
-    10
-    >>> inst.getCX()  # it was changed in access_from_function_with_different_directive
-    20
     >>> inst = HoldsC(False, False)
     >>> inst.getCX()
-    Traceback (most recent call last):
-        ...
-    AttributeError: C++ attribute 'value' is not initialized
-    >>> access_from_function_with_different_directive(inst)
     Traceback (most recent call last):
         ...
     AttributeError: C++ attribute 'value' is not initialized
@@ -190,16 +180,6 @@ cdef class HoldsC:
 
     def getCX(self):
         return self.value.getX()
-
-cdef acceptC(C& c):
-    return c.getX()
-
-@cython.cpp_locals(False)
-def access_from_function_with_different_directive(HoldsC c):
-    # doctest is in HoldsC class
-    print(acceptC(c.value))  # this originally tried to pass a __Pyx_Optional<C> as a C instance
-    print(c.value.getX())
-    c.value = C(20, False) # make sure that we can change it too
 
 def dont_test_on_pypy(f):
     import sys

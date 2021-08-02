@@ -1,5 +1,5 @@
 # mode: run
-# tag: cpp, werror, cpp11, no-cpp-locals
+# tag: cpp, werror, cpp11
 # cython: experimental_cpp_class_def=True
 
 cdef double pi

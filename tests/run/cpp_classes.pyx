@@ -1,5 +1,5 @@
 # mode: run
-# tag: cpp, werror, no-cpp-locals
+# tag: cpp, werror
 
 from libcpp.vector cimport vector
 

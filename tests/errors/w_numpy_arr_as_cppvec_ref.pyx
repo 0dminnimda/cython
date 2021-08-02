@@ -1,5 +1,5 @@
 # mode: error
-# tag: cpp, werror, numpy, no-cpp-locals
+# tag: cpp, werror, numpy
 
 import numpy as np
 cimport numpy as np

@@ -1,5 +1,5 @@
 # mode: run
-# tag: cpp, werror, cpp11, no-cpp-locals
+# tag: cpp, werror, cpp11
 
 from __future__ import print_function
 

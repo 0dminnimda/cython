@@ -1,4 +1,4 @@
-# tag: cpp, no-cpp-locals
+# tag: cpp
 
 cdef extern from "cpp_nested_classes_support.h":
     cdef cppclass A:
