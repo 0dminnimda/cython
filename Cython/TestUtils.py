@@ -233,22 +233,21 @@ def write_file(file_path, content, dedent=False, encoding="utf-8"):
     at `file_path` without translating `'\n'` into `os.linesep`.
     """
 
-    _encoding = None
-    newline = None
+    # any "\n" characters written are not translated
+    # to the system default line separator, os.linesep
+    newline = "\n"
     mode = "w"
     if isinstance(content, bytes):
         mode += "b"
-    else:
-        _encoding = encoding
-
-        # any "\n" characters written are not translated
-        # to the system default line separator, os.linesep
-        newline = "\n"
+        
+        # binary mode doesn't take an encoding and newline arguments
+        encoding = None
+        newline = None
 
     if dedent:
         content = textwrap.dedent(content)
 
-    with open(file_path, mode=mode, encoding=_encoding, newline=newline) as f:
+    with open(file_path, mode=mode, encoding=encoding, newline=newline) as f:
         f.write(content)
 
 
