@@ -441,6 +441,7 @@ class PyrexScanner(Scanner):
         except UnrecognizedInput:
             self.error("Unrecognized character")
             return  # just a marker, error() always raises
+        original_sy = sy
         if sy == IDENT:
             if systring in self.keywords:
                 if systring == u'print' and print_function in self.context.future_directives:
@@ -459,6 +460,7 @@ class PyrexScanner(Scanner):
             else:
                 t = "%s %s" % (self.sy, self.systring)
             print("--- %3d %2d %s" % (line, col, t))
+        return original_sy
 
     def peek(self):
         saved = self.sy, self.systring
