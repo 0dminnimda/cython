@@ -1,5 +1,4 @@
 # PEG grammar for Cython
-# python -m pegen Cython/Pegen/cython.gram -o Cython/Pegen/parser.py
 
 @class CythonParser
 
