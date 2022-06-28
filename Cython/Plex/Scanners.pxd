@@ -42,5 +42,6 @@ cdef class Scanner:
                    trace=bint, discard=Py_ssize_t, data=unicode, buffer=unicode)
     cdef run_machine_inlined(self)
 
+    cdef inline unicode read_the_stream(self, double size)
     cdef inline begin(self, state)
     cdef inline produce(self, value, text = *)

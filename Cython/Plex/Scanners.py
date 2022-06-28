@@ -203,7 +203,7 @@ class Scanner(object):
                         next_pos += 1
                     else:
                         discard = self.start_pos - buf_start_pos
-                        data = self.stream.read(0x1000)
+                        data = self.read_the_stream(0x1000)
                         buffer = self.buffer[discard:] + data
                         self.buffer = buffer
                         buf_start_pos += discard
@@ -262,6 +262,9 @@ class Scanner(object):
             if action is not None:
                 print("Doing %s" % action)
         return action
+
+    def read_the_stream(self, size):
+        return self.stream.read(size)
 
     def next_char(self):
         input_state = self.input_state
