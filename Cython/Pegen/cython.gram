@@ -119,7 +119,6 @@ class Parser(Parser):
         self.py_version = min(py_version, sys.version_info) if py_version else sys.version_info
 
     def parse(self, rule: str, call_invalid_rules: bool = False) -> Optional[ast.AST]:
-        old = self.call_invalid_rules
         self.call_invalid_rules = call_invalid_rules
         res = getattr(self, rule)()
 
