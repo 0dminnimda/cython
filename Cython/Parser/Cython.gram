@@ -11,8 +11,6 @@ import sys
 import token
 from typing import Any, Callable, Iterator, List, Literal, NoReturn, Tuple, TypeVar, Union
 
-from pegen.tokenizer import Tokenizer
-
 from .. import Utils
 from ..Compiler import Builtin, ExprNodes, Nodes
 from ..Compiler.Main import CompilationSource, Context
@@ -57,51 +55,6 @@ EXPR_NAME_MAPPING = {
 }
 
 
-def parse_file(
-    path: str,
-    py_version: Optional[tuple]=None,
-    token_stream_factory: Optional[
-        Callable[[Callable[[], str]], Iterator[tokenize.TokenInfo]]
-    ] = None,
-    verbose:bool = False,
-) -> ast.Module:
-    """Parse a file."""
-    with open(path) as f:
-        tok_stream = (
-            token_stream_factory(f.readline)
-            if token_stream_factory else
-            tokenize.generate_tokens(f.readline)
-        )
-        tokenizer = Tokenizer(tok_stream, verbose=verbose, path=path)
-        parser = CythonParser(
-            tokenizer,
-            verbose=verbose,
-            filename=os.path.basename(path),
-            py_version=py_version
-        )
-        return parser.parse("file")
-
-
-def parse_string(
-    source: str,
-    mode: Union[Literal["eval"], Literal["exec"]],
-    py_version: Optional[tuple]=None,
-    token_stream_factory: Optional[
-        Callable[[Callable[[], str]], Iterator[tokenize.TokenInfo]]
-    ] = None,
-    verbose:bool = False,
-) -> Any:
-    """Parse a string."""
-    tok_stream = (
-        token_stream_factory(io.StringIO(source).readline)
-        if token_stream_factory else
-        tokenize.generate_tokens(io.StringIO(source).readline)
-    )
-    tokenizer = Tokenizer(tok_stream, verbose=verbose)
-    parser = CythonParser(tokenizer, verbose=verbose, py_version=py_version)
-    return parser.parse(mode if mode == "eval" else "file")
-
-
 class Target(enum.Enum):
     FOR_TARGETS = enum.auto()
     STAR_TARGETS = enum.auto()
@@ -114,7 +67,8 @@ class Parser(Parser):
     filename : str
 
     def __init__(self,
-        tokenizer: Tokenizer, *,
+        tokenizer: Tokenizer,
+        source_desc, *,
         verbose: bool = False,
         filename: str = "<unknown>",
         py_version: Optional[tuple] = None,
@@ -122,27 +76,7 @@ class Parser(Parser):
         super().__init__(tokenizer, verbose=verbose)
         self.filename = filename
         self.py_version = min(py_version, sys.version_info) if py_version else sys.version_info
-
-        # cython init, look into the Main.run_pipeline
-        options = CompilationOptions(default_options)
-
-        source_ext = os.path.splitext(filename)[1]
-        options.configure_language_defaults(source_ext[1:])  # py/pyx
-        context = Context.from_options(options)
-
-        # Set up filename object
-        full_module_name = EncodedString(context.extract_module_name(filename, options))
-        Utils.raise_error_if_module_name_forbidden(full_module_name)
-
-        abs_path = os.path.abspath(filename)
-        if options.relative_path_in_code_position_comments:
-            rel_path = full_module_name.replace('.', os.sep) + source_ext
-            if not abs_path.endswith(rel_path):
-                rel_path = filename  # safety measure to prevent printing incorrect paths
-        else:
-            rel_path = abs_path
-        self.source_desc = source_desc = FileSourceDescriptor(abs_path, rel_path)
-        filename = CompilationSource(source_desc, full_module_name, os.getcwd())
+        self.source_desc = source_desc
 
     def parse(self, rule: str, call_invalid_rules: bool = False) -> Optional[ast.AST]:
         self.call_invalid_rules = call_invalid_rules
