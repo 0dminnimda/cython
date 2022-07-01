@@ -202,7 +202,6 @@ class Parser(Parser):
         pair = number.pairs[0]
 
         if pair[0] == "INT":
-            # ExprNodes.IntNode(self.pos(LOCATIONS), is_c_literal=False, value=a.string, unsigned="", longness="")
             # Adapted from Cython.Compiler.Parsing.p_int_literal
             value = pair[1]
             unsigned = ""
@@ -3377,7 +3376,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . NoneNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -5425,7 +5424,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = None , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . NoneNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
