@@ -56,9 +56,8 @@ class TokenStreamer(PyrexScanner):
             if sy == "EOF":
                 break
 
-    def update_taken_start(self):
+    def update_token_start(self):
         self.token_start = self.start_line, self.start_col
-        return self.token_start
 
     def create_token(self, type, string):
         if type == token.NEWLINE:
@@ -76,7 +75,7 @@ class TokenStreamer(PyrexScanner):
         string = ""
         for type, symbol in self.pair_generator():
             if type == "BEGIN_STRING":
-                self.update_taken_start()
+                self.update_token_start()
                 string += symbol
 
             elif type == "END_STRING":
@@ -89,16 +88,16 @@ class TokenStreamer(PyrexScanner):
 
             elif type == "NEWLINE":
                 assert symbol == "", repr(symbol)
-                self.update_taken_start()
+                self.update_token_start()
                 self.pairs.clear()
                 yield self.create_token(token.NEWLINE, "\n")
 
             elif type in token.EXACT_TOKEN_TYPES:
-                self.update_taken_start()
+                self.update_token_start()
                 self.pairs.clear()
                 yield self.create_token(token.OP, symbol)
 
             else:
-                self.update_taken_start()
+                self.update_token_start()
                 self.pairs.clear()
                 yield self.create_token(TOKEN_TYPE_MAP[type], symbol)
