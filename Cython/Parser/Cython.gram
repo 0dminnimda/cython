@@ -980,8 +980,8 @@ literal_expr:
     | complex_number
     | strings
     | 'None' { ExprNodes.NoneNode(self.pos(LOCATIONS)) }
-    | 'True' { ast.Constant(value=True, LOCATIONS) }
-    | 'False' { ast.Constant(value=False, LOCATIONS) }
+    | 'True' { ExprNodes.BoolNode(self.pos(LOCATIONS), value=True) }
+    | 'False' { ExprNodes.BoolNode(self.pos(LOCATIONS), value=False) }
 
 complex_number:
     | real=signed_real_number '+' imag=imaginary_number {
@@ -1330,16 +1330,8 @@ slice:
 
 atom:
     | a=NAME { ast.Name(id=a.string, ctx=Load, LOCATIONS) }
-    | 'True' {
-        ast.Constant(value=True, LOCATIONS)
-        if sys.version_info >= (3, 9) else
-        ast.Constant(value=True, kind=None, LOCATIONS)
-     }
-    | 'False' {
-        ast.Constant(value=False, LOCATIONS)
-        if sys.version_info >= (3, 9) else
-        ast.Constant(value=False, kind=None, LOCATIONS)
-     }
+    | 'True' { ExprNodes.BoolNode(self.pos(LOCATIONS), value=True) }
+    | 'False' { ExprNodes.BoolNode(self.pos(LOCATIONS), value=False) }
     | 'None' { ExprNodes.NoneNode(self.pos(LOCATIONS)) }
     | &STRING strings
     | a=NUMBER { self.generate_ast_for_number(a, self.pos(LOCATIONS)) }

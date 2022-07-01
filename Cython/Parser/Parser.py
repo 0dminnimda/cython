@@ -3387,7 +3387,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . BoolNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , value = True );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -3398,7 +3398,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . BoolNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , value = False );
         self._reset(mark)
         return None;
 
@@ -5402,7 +5402,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = True , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = True , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . BoolNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , value = True );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -5413,7 +5413,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = False , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = False , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . BoolNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , value = False );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
