@@ -1,7 +1,15 @@
 import token
-from tokenize import TokenInfo
+from collections import namedtuple
 
 from ..Compiler.Scanning import PyrexScanner
+
+
+# altered version of the tokenize.TokenInfo
+class TokenInfo(namedtuple('TokenInfo', 'type string start end line pairs')):
+    def __repr__(self):
+        annotated_type = '%d (%s)' % (self.type, token.tok_name[self.type])
+        return ('TokenInfo(type=%s, string=%r, start=%r, end=%r, line=%r, pairs=%r)' %
+                self._replace(type=annotated_type))
 
 
 TOKEN_TYPE_MAP = {
@@ -34,6 +42,7 @@ TOKEN_TYPE_MAP = {
 class TokenStreamer(PyrexScanner):
     line_string = ""
     token_start = 0, 0
+    pairs = []  # type: list[tuple[str, str]]
 
     def read_the_stream(self, size):
         self.line_string = self.stream.readline()
@@ -41,9 +50,10 @@ class TokenStreamer(PyrexScanner):
 
     def pair_generator(self):
         while 1:
-            symbol = self.next()
-            yield symbol, self.systring
-            if symbol == "EOF":
+            sy = self.next()
+            self.pairs.append((sy, self.systring))
+            yield sy, self.systring
+            if sy == "EOF":
                 break
 
     def update_taken_start(self):
@@ -55,7 +65,12 @@ class TokenStreamer(PyrexScanner):
             end = self.token_start[0], self.token_start[1] + len(string)
         else:
             end = self.cur_line, self.cur_pos - self.cur_line_start
-        return TokenInfo(type, string, self.token_start, end, self.line_string)
+
+        pairs = tuple(self.pairs)
+        self.pairs.clear()
+
+        return TokenInfo(type, string, self.token_start,
+                         end, self.line_string, pairs)
 
     def __iter__(self):
         string = ""
@@ -75,12 +90,15 @@ class TokenStreamer(PyrexScanner):
             elif type == "NEWLINE":
                 assert symbol == "", repr(symbol)
                 self.update_taken_start()
+                self.pairs.clear()
                 yield self.create_token(token.NEWLINE, "\n")
 
             elif type in token.EXACT_TOKEN_TYPES:
                 self.update_taken_start()
+                self.pairs.clear()
                 yield self.create_token(token.OP, symbol)
 
             else:
                 self.update_taken_start()
+                self.pairs.clear()
                 yield self.create_token(TOKEN_TYPE_MAP[type], symbol)
