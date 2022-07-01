@@ -196,17 +196,60 @@ class Parser(Parser):
         node.ctx = context
         return node
 
-    def ensure_real(self, number: ast.Constant):
-        value = ast.literal_eval(number.string)
-        if type(value) is complex:
-            self.raise_syntax_error_known_location("real number required in complex literal", number)
-        return value
+    def generate_ast_for_number(self, number, pos):
+        if len(number.pairs) == 0:
+            self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
+        pair = number.pairs[0]
 
-    def ensure_imaginary(self, number:  ast.Constant):
-        value = ast.literal_eval(number.string)
-        if type(value) is not complex:
+        if pair[0] == "INT":
+            # ExprNodes.IntNode(self.pos(LOCATIONS), is_c_literal=False, value=a.string, unsigned="", longness="")
+            # Adapted from Cython.Compiler.Parsing.p_int_literal
+            value = pair[1]
+            unsigned = ""
+            longness = ""
+            while value[-1] in u"UuLl":
+                if value[-1] in u"Ll":
+                    longness += "L"
+                else:
+                    unsigned += "U"
+                value = value[:-1]
+            # '3L' is ambiguous in Py2 but not in Py3.  '3U' and '3LL' are
+            # illegal in Py2 Python files.  All suffixes are illegal in Py3
+            # Python files.
+            is_c_literal = None
+            if unsigned:
+                is_c_literal = True
+            elif longness:
+                if longness == 'LL' or self.streamer.context.language_level >= 3:
+                    is_c_literal = True
+            if self.streamer.in_python_file:
+                if is_c_literal:
+                    error(pos, "illegal integer literal syntax in Python source file")
+                is_c_literal = False
+            return ExprNodes.IntNode(pos, is_c_literal=is_c_literal, value=value,
+                                     unsigned=unsigned, longness=longness)
+        if pair[0] == "FLOAT":
+            return ExprNodes.FloatNode(pos, value=pair[1])
+        if pair[0] == "IMAG":
+            return ExprNodes.ImagNode(pos, value=pair[1])
+
+        self.raise_initernal_error("NUMBER token is expected to be one of the types 'INT', 'FLOAT', 'IMAG', found %r" % pair[0])
+
+    def generate_ast_for_real(self, number, pos):
+        if len(number.pairs) == 0:
+            self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
+        pair = number.pairs[0]
+        if pair[0] != "FLOAT":
+            self.raise_syntax_error_known_location("real number required in complex literal", number)
+        return ExprNodes.FloatNode(pos, value=pair[1])
+
+    def generate_ast_for_imaginary(self, number, pos):
+        if len(number.pairs) == 0:
+            self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
+        value = number.pairs[0]
+        if pair[0] != "IMAG":
             self.raise_syntax_error_known_location("imaginary number required in complex literal", number)
-        return value
+        return ExprNodes.ImagNode(pos, value=pair[1])
 
     def generate_ast_for_string(self, tokens, pos):
         """Generate AST nodes for strings."""
@@ -3413,7 +3456,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = ast . literal_eval ( a . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . generate_ast_for_number ( a , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -3426,7 +3469,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . UnaryOp ( op = ast . USub ( ) , operand = ast . Constant ( value = ast . literal_eval ( a . string ) , lineno = a . start [0] , col_offset = a . start [1] , end_lineno = a . end [0] , end_col_offset = a . end [1] ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
+            return ast . UnaryOp ( op = ast . USub ( ) , operand = self . generate_ast_for_number ( a , self . tok_pos ( a ) ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
         self._reset(mark)
         return None;
 
@@ -3475,7 +3518,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = self . ensure_real ( real ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . generate_ast_for_real ( real , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         return None;
 
@@ -3494,7 +3537,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = self . ensure_imaginary ( imag ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . generate_ast_for_imaginary ( imag , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         return None;
 
@@ -5404,7 +5447,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . Constant ( value = ast . literal_eval ( a . string ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) if sys . version_info >= ( 3 , 9 ) else ast . Constant ( value = ast . literal_eval ( a . string ) , kind = None , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . generate_ast_for_number ( a , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
