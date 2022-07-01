@@ -15,9 +15,7 @@ class TokenInfo(namedtuple('TokenInfo', 'type string start end line pairs')):
 TOKEN_TYPE_MAP = {
     "EOF": token.ENDMARKER,
     "IDENT": token.NAME,
-    "INT": token.NUMBER,
-    "FLOAT": token.NUMBER,
-    "IMAG": token.NUMBER,
+    # token.NUMBER is handled in the __iter__
     # token.STRING is handled in the __iter__
     # token.NEWLINE is handled in the __iter__
     "INDENT": token.INDENT,
@@ -92,6 +90,12 @@ class TokenStreamer(PyrexScanner):
                 self.update_token_start()
                 self.pairs.clear()
                 yield self.create_token(token.NEWLINE, "\n")
+
+            elif type in ("INT", "FLOAT", "IMAG"):
+                self.update_token_start()
+                # don't clear self.pairs, so it will be passed
+                # and type will not be lost
+                yield self.create_token(token.NUMBER, symbol)
 
             elif type in token.EXACT_TOKEN_TYPES:
                 self.update_token_start()
