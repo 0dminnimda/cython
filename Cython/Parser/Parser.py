@@ -196,11 +196,12 @@ class Parser(Parser):
         node.ctx = context
         return node
 
-    def generate_ast_for_number(self, number, pos):
+    def generate_ast_for_number(self, number):
         if len(number.pairs) == 0:
             self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
-        pair = number.pairs[0]
 
+        pos = self.tok_pos(number)
+        pair = number.pairs[0]
         if pair[0] == "INT":
             # Adapted from Cython.Compiler.Parsing.p_int_literal
             value = pair[1]
@@ -234,21 +235,21 @@ class Parser(Parser):
 
         self.raise_initernal_error("NUMBER token is expected to be one of the types 'INT', 'FLOAT', 'IMAG', found %r" % pair[0])
 
-    def generate_ast_for_real(self, number, pos):
+    def generate_ast_for_real(self, number):
         if len(number.pairs) == 0:
             self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
         pair = number.pairs[0]
         if pair[0] != "FLOAT":
             self.raise_syntax_error_known_location("real number required in complex literal", number)
-        return ExprNodes.FloatNode(pos, value=pair[1])
+        return ExprNodes.FloatNode(self.tok_pos(number), value=pair[1])
 
-    def generate_ast_for_imaginary(self, number, pos):
+    def generate_ast_for_imaginary(self, number):
         if len(number.pairs) == 0:
             self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
         value = number.pairs[0]
         if pair[0] != "IMAG":
             self.raise_syntax_error_known_location("imaginary number required in complex literal", number)
-        return ExprNodes.ImagNode(pos, value=pair[1])
+        return ExprNodes.ImagNode(self.tok_pos(number), value=pair[1])
 
     def generate_ast_for_string(self, tokens, pos):
         """Generate AST nodes for strings."""
@@ -3453,9 +3454,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return self . generate_ast_for_number ( a , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
+            return self . generate_ast_for_number ( a );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -3468,7 +3467,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . UnaryOp ( op = ast . USub ( ) , operand = self . generate_ast_for_number ( a , self . tok_pos ( a ) ) , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . UnaryMinusNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , operand = self . generate_ast_for_number ( a ) );
         self._reset(mark)
         return None;
 
@@ -3498,7 +3497,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . UnaryOp ( op = ast . USub ( ) , operand = real , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . UnaryMinusNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , operand = real );
         self._reset(mark)
         return None;
 
@@ -3506,8 +3505,6 @@ class CythonParser(Parser):
     def real_number(self) -> Optional[ast . Constant]:
         # real_number: NUMBER
         mark = self._mark()
-        tok = self._tokenizer.peek()
-        start_lineno, start_col_offset = tok.start
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
             __last = real = self.number()
@@ -3515,9 +3512,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return self . generate_ast_for_real ( real , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
+            return self . generate_ast_for_real ( real );
         self._reset(mark)
         return None;
 
@@ -3525,8 +3520,6 @@ class CythonParser(Parser):
     def imaginary_number(self) -> Optional[ast . Constant]:
         # imaginary_number: NUMBER
         mark = self._mark()
-        tok = self._tokenizer.peek()
-        start_lineno, start_col_offset = tok.start
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
             __last = imag = self.number()
@@ -3534,9 +3527,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return self . generate_ast_for_imaginary ( imag , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
+            return self . generate_ast_for_imaginary ( imag );
         self._reset(mark)
         return None;
 
@@ -5444,9 +5435,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return self . generate_ast_for_number ( a , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
+            return self . generate_ast_for_number ( a );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
