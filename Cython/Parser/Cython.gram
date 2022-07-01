@@ -1315,11 +1315,7 @@ atom:
     | &'(' (tuple | group | genexp)
     | &'[' (list | listcomp)
     | &'{' (dict | set | dictcomp | setcomp)
-    | '...' {
-        ast.Constant(value=Ellipsis, LOCATIONS)
-        if sys.version_info >= (3, 9) else
-        ast.Constant(value=Ellipsis, kind=None, LOCATIONS)
-     }
+    | '...' { ExprNodes.EllipsisNode(self.pos(LOCATIONS)) }
 
 group:
     | '(' a=(yield_expr | named_expression) ')' { a }
