@@ -106,6 +106,9 @@ class Parser(Parser):
 
         return res
 
+    def tok_pos(self, token):
+        return self.pos(*token.start, *token.end)
+
     def pos(self, lineno, col_offset, end_lineno, end_col_offset):
         return (self.source_desc, lineno, col_offset)
 
@@ -311,6 +314,10 @@ class Parser(Parser):
             kw_defaults=[d for _, d in after_star[1]],
             kwarg=after_star[2]
         )
+
+    def raise_initernal_error(self, message):
+        # TODO
+        raise NotImplementedError
 
     def _build_syntax_error(
         self,
