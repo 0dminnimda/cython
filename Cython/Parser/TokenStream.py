@@ -4,7 +4,7 @@ from tokenize import TokenInfo
 from ..Compiler.Scanning import PyrexScanner
 
 
-SYMBOL_TO_TOKEN = {
+TOKEN_MAP = {
     "EOF": token.ENDMARKER,
     "IDENT": token.NAME,
     "INT": token.NUMBER,
@@ -63,28 +63,24 @@ class TokenStreamer(PyrexScanner):
             if symbol == "BEGIN_STRING":
                 self.update_taken_start()
                 string += symbol_string
-                continue
 
-            if symbol == "END_STRING":
+            elif symbol == "END_STRING":
                 yield self.create_token(token.STRING, string + symbol_string)
                 string = ""
-                continue
 
-            if string:
+            elif string:
                 assert symbol in ("CHARS", "NEWLINE", "ESCAPE"), repr(symbol)
                 string += symbol_string
-                continue
 
-            if symbol == "NEWLINE":
+            elif symbol == "NEWLINE":
                 assert symbol_string == "", repr(symbol_string)
                 self.update_taken_start()
                 yield self.create_token(token.NEWLINE, "\n")
-                continue
 
-            if symbol in token.EXACT_TOKEN_TYPES:
+            elif symbol in token.EXACT_TOKEN_TYPES:
                 self.update_taken_start()
                 yield self.create_token(token.OP, symbol_string)
-                continue
 
-            self.update_taken_start()
-            yield self.create_token(SYMBOL_TO_TOKEN[symbol], symbol_string)
+            else:
+                self.update_taken_start()
+                yield self.create_token(TOKEN_MAP[symbol], symbol_string)
