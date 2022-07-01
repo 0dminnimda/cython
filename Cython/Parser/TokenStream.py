@@ -71,12 +71,12 @@ class TokenStreamer(PyrexScanner):
                 continue
 
             if string:
-                assert symbol in ("CHARS", "NEWLINE", "ESCAPE"), symbol
+                assert symbol in ("CHARS", "NEWLINE", "ESCAPE"), repr(symbol)
                 string += symbol_string
                 continue
 
             if symbol == "NEWLINE":
-                assert symbol_string == "", symbol_string
+                assert symbol_string == "", repr(symbol_string)
                 self.update_taken_start()
                 yield self.create_token(token.NEWLINE, "\n")
                 continue
