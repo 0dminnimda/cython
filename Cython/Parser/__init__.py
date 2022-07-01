@@ -11,6 +11,7 @@ def parse(f, context, source_desc, scope, pxd, full_module_name):
     tokenizer = Tokenizer(iter(token_stream), verbose=verbose)  # , path=path)
     parser = CythonParser(
         tokenizer,
+        token_stream,
         source_desc,
         verbose=verbose,
         filename=full_module_name,

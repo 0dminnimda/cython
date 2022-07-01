@@ -79,6 +79,7 @@ class TokenStreamer(PyrexScanner):
                 string += symbol
 
             elif type == "END_STRING":
+                self.pairs.clear()
                 yield self.create_token(token.STRING, string + symbol)
                 string = ""
 

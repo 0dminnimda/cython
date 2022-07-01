@@ -4,12 +4,14 @@
 
 @subheader'''
 import enum
+import io
 import itertools
 import sys
 import token
 from typing import Any, List, NoReturn, Tuple, TypeVar, Union
 
-from ..Compiler import Builtin, ExprNodes, Nodes
+from ..Compiler import Builtin, ExprNodes, Nodes, Parsing
+from ..Compiler.Scanning import PyrexScanner
 from ..Compiler.StringEncoding import EncodedString
 
 # Singleton ast nodes, created once for efficiency
@@ -62,6 +64,7 @@ class Parser(Parser):
 
     def __init__(self,
         tokenizer,
+        streamer,
         source_desc, *,
         verbose: bool = False,
         filename: str = "<unknown>",
@@ -71,6 +74,7 @@ class Parser(Parser):
         self.filename = filename
         self.py_version = min(py_version, sys.version_info) if py_version else sys.version_info
         self.source_desc = source_desc
+        self.streamer = streamer
 
     def parse(self, rule: str, call_invalid_rules: bool = False) -> Optional[ast.AST]:
         self.call_invalid_rules = call_invalid_rules
@@ -195,9 +199,8 @@ class Parser(Parser):
             self.raise_syntax_error_known_location("imaginary number required in complex literal", number)
         return value
 
-    def generate_ast_for_string(self, tokens):
+    def generate_ast_for_string(self, tokens, pos):
         """Generate AST nodes for strings."""
-        err_args = None
         line_offset = tokens[0].start[0]
         line = line_offset
         col_offset = 0
@@ -209,30 +212,27 @@ class Parser(Parser):
             source += """\\n""" * n_line + ' ' * (t.start[1] - col_offset) + t.string
             line, col_offset = t.end
         source += "\\n)"
-        try:
-            m = ast.parse(source)
-        except SyntaxError as err:
-            args = (err.filename, err.lineno + line_offset - 2, err.offset, err.text)
-            if sys.version_info >= (3, 10):
-                args += (err.end_lineno + line_offset - 2, err.end_offset)
-            err_args = (err.msg, args)
-            # Ensure we do not keep the frame alive longer than necessary
-            # by explicitely deleting the error once we got what we needed out
-            # of it
-            del err
 
-        # Avoid getting a triple nesting in the error report that does not
-        # bring anything relevant to the traceback.
-        if err_args is not None:
-            raise SyntaxError(*err_args)
+        scanner = PyrexScanner(
+            io.StringIO(source), self.source_desc, parent_scanner=self.streamer,
+            source_encoding=self.streamer.source_encoding, initial_pos=pos)
 
-        node = m.body[0].value
-        # Since we asked Python to parse an alterred source starting at line 2
-        # we alter the lineno of the returned AST to recover the right line.
-        # If the string start at line 1, tha AST says 2 so we need to decrement by 1
-        # hence the -2.
-        ast.increment_lineno(node, line_offset - 2)
-        return node
+        scanner.next()
+        assert scanner.sy == "BEGIN_STRING"
+        kind, bytes_value, unicode_value = Parsing.p_cat_string_literal(scanner)
+
+        if kind == "c":
+            return ExprNodes.CharNode(pos, value = bytes_value)
+        elif kind == "u":
+            return ExprNodes.UnicodeNode(pos, value = unicode_value, bytes_value = bytes_value)
+        elif kind == "b":
+            return ExprNodes.BytesNode(pos, value = bytes_value)
+        elif kind == "f":
+            return ExprNodes.JoinedStrNode(pos, values = unicode_value)
+        elif kind == "":
+            return ExprNodes.StringNode(pos, value = bytes_value, unicode_value = unicode_value)
+        else:
+            self.streamer.error("invalid string kind '%s'" % kind)
 
     def extract_import_level(self, tokens: List[tokenize.TokenInfo]) -> int:
         """Extract the relative import level from the tokens preceding the module name.
@@ -1396,7 +1396,7 @@ lambda_param[ast.arg]: a=NAME {
 # LITERALS
 # ========
 
-strings[ast.Str] (memo): a=STRING+ { self.generate_ast_for_string(a) }
+strings[ast.Str] (memo): a=STRING+ { self.generate_ast_for_string(a, self.pos(LOCATIONS)) }
 
 list[ast.List]:
     | '[' a=[star_named_expressions] ']' { ast.List(elts=a or [], ctx=Load, LOCATIONS) }
