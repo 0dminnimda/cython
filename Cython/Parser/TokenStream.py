@@ -4,7 +4,7 @@ from tokenize import TokenInfo
 from ..Compiler.Scanning import PyrexScanner
 
 
-TOKEN_MAP = {
+TOKEN_TYPE_MAP = {
     "EOF": token.ENDMARKER,
     "IDENT": token.NAME,
     "INT": token.NUMBER,
@@ -59,28 +59,28 @@ class TokenStreamer(PyrexScanner):
 
     def __iter__(self):
         string = ""
-        for symbol, symbol_string in self.pair_generator():
-            if symbol == "BEGIN_STRING":
+        for type, symbol in self.pair_generator():
+            if type == "BEGIN_STRING":
                 self.update_taken_start()
-                string += symbol_string
+                string += symbol
 
-            elif symbol == "END_STRING":
-                yield self.create_token(token.STRING, string + symbol_string)
+            elif type == "END_STRING":
+                yield self.create_token(token.STRING, string + symbol)
                 string = ""
 
             elif string:
-                assert symbol in ("CHARS", "NEWLINE", "ESCAPE"), repr(symbol)
-                string += symbol_string
+                assert type in ("CHARS", "NEWLINE", "ESCAPE"), repr(type)
+                string += symbol
 
-            elif symbol == "NEWLINE":
-                assert symbol_string == "", repr(symbol_string)
+            elif type == "NEWLINE":
+                assert symbol == "", repr(symbol)
                 self.update_taken_start()
                 yield self.create_token(token.NEWLINE, "\n")
 
-            elif symbol in token.EXACT_TOKEN_TYPES:
+            elif type in token.EXACT_TOKEN_TYPES:
                 self.update_taken_start()
-                yield self.create_token(token.OP, symbol_string)
+                yield self.create_token(token.OP, symbol)
 
             else:
                 self.update_taken_start()
-                yield self.create_token(TOKEN_MAP[symbol], symbol_string)
+                yield self.create_token(TOKEN_TYPE_MAP[type], symbol)
