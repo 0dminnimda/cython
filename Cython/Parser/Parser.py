@@ -32,7 +32,7 @@ EXPR_NAME_MAPPING = {
     ast.Attribute: "attribute",
     ast.Subscript: "subscript",
     ast.Starred: "starred",
-    ast.Name: "name",
+    ExprNodes.NameNode: "name",
     ast.List: "list",
     ast.Tuple: "tuple",
     ast.Lambda: "lambda",
@@ -52,7 +52,7 @@ EXPR_NAME_MAPPING = {
     ast.JoinedStr: "f-string expression",
     ast.FormattedValue: "f-string expression",
     ast.Compare: "comparison",
-    ast.IfExp: "conditional expression",
+    ExprNodes.CondExprNode: "conditional expression",
     ast.NamedExpr: "named expression",
 }
 
@@ -172,7 +172,7 @@ class Parser(Parser):
                 return None
 
             return node
-        elif isinstance(node, (ast.Name, ast.Subscript, ast.Attribute)):
+        elif isinstance(node, (ExprNodes.NameNode, ast.Subscript, ast.Attribute)):
             return None
         else:
             return node
@@ -279,6 +279,9 @@ class Parser(Parser):
         else:
             self.streamer.error("invalid string kind '%s'" % kind)
 
+    def reuse_name(self, name):
+        return self.streamer.context.intern_ustring(name.string)
+
     def make_name(self, name):
         # Adapted from Cython.Compiler.Parsing.p_name
         pos = self.tok_pos(name)
@@ -287,7 +290,7 @@ class Parser(Parser):
             node = Parsing.wrap_compile_time_constant(pos, value)
             if node is not None:
                 return node
-        return ExprNodes.NameNode(pos, name=name.string)
+        return ExprNodes.NameNode(pos, name=self.reuse_name(name))
 
     def extract_import_level(self, tokens: List[tokenize.TokenInfo]) -> int:
         """Extract the relative import level from the tokens preceding the module name.
@@ -985,7 +988,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 6 ) , "Variable annotation syntax is" , ast . AnnAssign ( target = ast . Name ( id = a . string , ctx = Store , lineno = a . start [0] , col_offset = a . start [1] , end_lineno = a . end [0] , end_col_offset = a . end [1] , ) , annotation = b , value = c , simple = 1 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) );
+            return ast . AnnAssign ( target = self . make_name ( a ) , annotation = b , value = c , simple = 1 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -1003,7 +1006,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 6 ) , "Variable annotation syntax is" , ast . AnnAssign ( target = a , annotation = b , value = c , simple = 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) );
+            return ast . AnnAssign ( target = a , annotation = b , value = c , simple = 0 , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -1767,9 +1770,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . make_name ( a );
         self._reset(mark)
         return None;
 
@@ -3647,8 +3648,6 @@ class CythonParser(Parser):
     def name_or_attr(self) -> Optional[Any]:
         # name_or_attr: attr | NAME
         mark = self._mark()
-        tok = self._tokenizer.peek()
-        start_lineno, start_col_offset = tok.start
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
             __last = attr = self.attr()
@@ -3665,9 +3664,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = name . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . make_name ( name );
         self._reset(mark)
         return None;
 
@@ -4191,7 +4188,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . IfExp ( body = a , test = b , orelse = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . CondExprNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , true_val = a , test = b , false_val = c );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -5391,9 +5388,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . make_name ( a );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -6711,9 +6706,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . make_name ( a );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -6766,8 +6759,6 @@ class CythonParser(Parser):
     def single_target(self) -> Optional[Any]:
         # single_target: single_subscript_attribute_target | NAME | '(' single_target ')'
         mark = self._mark()
-        tok = self._tokenizer.peek()
-        start_lineno, start_col_offset = tok.start
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
             __last = single_subscript_attribute_target = self.single_subscript_attribute_target()
@@ -6784,9 +6775,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . make_name ( a );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -7054,9 +7043,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            tok = self._tokenizer.get_last_non_whitespace_token()
-            end_lineno, end_col_offset = tok.end
-            return ast . Name ( id = a . string , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return self . make_name ( a );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -7408,7 +7395,7 @@ class CythonParser(Parser):
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
             self.call_invalid_rules = _prev_call_invalid
-            return ast . IfExp ( body = b , test = a , orelse = c , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . CondExprNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , true_val = a , test = b , false_val = c );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -7467,7 +7454,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            return ( self . raise_syntax_error_known_range ( "invalid syntax. Perhaps you forgot a comma?" , a , b ) if not isinstance ( a , ast . Name ) or a . id not in ( "print" , "exec" ) else None );
+            return ( self . raise_syntax_error_known_range ( "invalid syntax. Perhaps you forgot a comma?" , a , b ) if not isinstance ( a , ExprNodes . NameNode ) or a . id not in ( "print" , "exec" ) else None );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'

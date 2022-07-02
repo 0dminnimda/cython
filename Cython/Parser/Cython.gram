@@ -26,7 +26,7 @@ EXPR_NAME_MAPPING = {
     ast.Attribute: "attribute",
     ast.Subscript: "subscript",
     ast.Starred: "starred",
-    ast.Name: "name",
+    ExprNodes.NameNode: "name",
     ast.List: "list",
     ast.Tuple: "tuple",
     ast.Lambda: "lambda",
@@ -46,7 +46,7 @@ EXPR_NAME_MAPPING = {
     ast.JoinedStr: "f-string expression",
     ast.FormattedValue: "f-string expression",
     ast.Compare: "comparison",
-    ast.IfExp: "conditional expression",
+    ExprNodes.CondExprNode: "conditional expression",
     ast.NamedExpr: "named expression",
 }
 
@@ -166,7 +166,7 @@ class Parser(Parser):
                 return None
 
             return node
-        elif isinstance(node, (ast.Name, ast.Subscript, ast.Attribute)):
+        elif isinstance(node, (ExprNodes.NameNode, ast.Subscript, ast.Attribute)):
             return None
         else:
             return node
@@ -273,6 +273,9 @@ class Parser(Parser):
         else:
             self.streamer.error("invalid string kind '%s'" % kind)
 
+    def reuse_name(self, name):
+        return self.streamer.context.intern_ustring(name.string)
+
     def make_name(self, name):
         # Adapted from Cython.Compiler.Parsing.p_name
         pos = self.tok_pos(name)
@@ -281,7 +284,7 @@ class Parser(Parser):
             node = Parsing.wrap_compile_time_constant(pos, value)
             if node is not None:
                 return node
-        return ExprNodes.NameNode(pos, name=name.string)
+        return ExprNodes.NameNode(pos, name=self.reuse_name(name))
 
     def extract_import_level(self, tokens: List[tokenize.TokenInfo]) -> int:
         """Extract the relative import level from the tokens preceding the module name.
@@ -544,36 +547,22 @@ compound_stmt:
 # NOTE: annotated_rhs may start with 'yield'; yield_expr must start with 'yield'
 assignment:
     | a=NAME ':' b=expression c=['=' d=annotated_rhs { d }] {
-        self.check_version(
-            (3, 6),
-            "Variable annotation syntax is",
-            ast.AnnAssign(
-                target=ast.Name(
-                    id=a.string,
-                    ctx=Store,
-                    lineno=a.start[0],
-                    col_offset=a.start[1],
-                    end_lineno=a.end[0],
-                    end_col_offset=a.end[1],
-                ),
-                annotation=b,
-                value=c,
-                simple=1,
-                LOCATIONS,
-            )
-        ) }
+        ast.AnnAssign(
+            target=self.make_name(a),
+            annotation=b,
+            value=c,
+            simple=1,
+            LOCATIONS,
+        )
+     }
     | a=('(' b=single_target ')' { b }
          | single_subscript_attribute_target) ':' b=expression c=['=' d=annotated_rhs { d }] {
-        self.check_version(
-            (3, 6),
-            "Variable annotation syntax is",
-            ast.AnnAssign(
-                target=a,
-                annotation=b,
-                value=c,
-                simple=0,
-                LOCATIONS,
-            )
+        ast.AnnAssign(
+            target=a,
+            annotation=b,
+            value=c,
+            simple=0,
+            LOCATIONS,
         )
      }
     | a=(z=star_targets '=' { z })+ b=(yield_expr | star_expressions) !'=' tc=[TYPE_COMMENT] {
@@ -684,7 +673,7 @@ dec_maybe_call:
     | dec_primary
 dec_primary:
     | a=dec_primary '.' b=NAME { ast.Attribute(value=a, attr=b.string, ctx=Load, LOCATIONS) }
-    | a=NAME { ast.Name(id=a.string, ctx=Load, LOCATIONS) }
+    | a=NAME { self.make_name(a) }
 
 # Class definitions
 # -----------------
@@ -1040,7 +1029,7 @@ attr[ast.Attribute]:
 
 name_or_attr:
     | attr
-    | name=NAME { ast.Name(id=name.string, ctx=Load, LOCATIONS) }
+    | name=NAME { self.make_name(name) }
 
 group_pattern:
     | '(' pattern=pattern ')' { pattern }
@@ -1144,7 +1133,7 @@ expression (memo):
     | invalid_expression
     | invalid_legacy_expression
     | a=disjunction 'if' b=disjunction 'else' c=expression {
-        ast.IfExp(body=a, test=b, orelse=c, LOCATIONS)
+        ExprNodes.CondExprNode(self.pos(LOCATIONS), true_val=a, test=b, false_val=c)
      }
     | disjunction
     | lambdef
@@ -1326,7 +1315,7 @@ slice:
      }
 
 atom:
-    | a=NAME { ast.Name(id=a.string, ctx=Load, LOCATIONS) }
+    | a=NAME { self.make_name(a) }
     | 'True' { ExprNodes.BoolNode(self.pos(LOCATIONS), value=True) }
     | 'False' { ExprNodes.BoolNode(self.pos(LOCATIONS), value=False) }
     | 'None' { ExprNodes.NoneNode(self.pos(LOCATIONS)) }
@@ -1544,14 +1533,14 @@ target_with_star_atom (memo):
     | star_atom
 
 star_atom:
-    | a=NAME { ast.Name(id=a.string, ctx=Store, LOCATIONS) }
+    | a=NAME { self.make_name(a) }
     | '(' a=target_with_star_atom ')' { self.set_expr_context(a, Store) }
     | '(' a=[star_targets_tuple_seq] ')' { ast.Tuple(elts=a, ctx=Store, LOCATIONS) }
     | '[' a=[star_targets_list_seq] ']' {  ast.List(elts=a, ctx=Store, LOCATIONS) }
 
 single_target:
     | single_subscript_attribute_target
-    | a=NAME { ast.Name(id=a.string, ctx=Store, LOCATIONS) }
+    | a=NAME { self.make_name(a) }
     | '(' a=single_target ')' { a }
 
 single_subscript_attribute_target:
@@ -1586,7 +1575,7 @@ del_target (memo):
     | del_t_atom
 
 del_t_atom:
-    | a=NAME { ast.Name(id=a.string, ctx=Del, LOCATIONS) }
+    | a=NAME { self.make_name(a) }
     | '(' a=del_target ')' { self.set_expr_context(a, Del) }
     | '(' a=[del_targets] ')' { ast.Tuple(elts=a, ctx=Del, LOCATIONS) }
     | '[' a=[del_targets] ']' { ast.List(elts=a, ctx=Del, LOCATIONS) }
@@ -1673,7 +1662,9 @@ invalid_kwarg[NoReturn]:
      }
 
 expression_without_invalid[ast.AST]:
-    | a=disjunction 'if' b=disjunction 'else' c=expression { ast.IfExp(body=b, test=a, orelse=c, LOCATIONS) }
+    | a=disjunction 'if' b=disjunction 'else' c=expression {
+        ExprNodes.CondExprNode(self.pos(LOCATIONS), true_val=a, test=b, false_val=c)
+     }
     | disjunction
     | lambdef
 invalid_legacy_expression:
@@ -1689,7 +1680,7 @@ invalid_expression[NoReturn]:
     | !(NAME STRING | SOFT_KEYWORD) a=disjunction b=expression_without_invalid {
         (
             self.raise_syntax_error_known_range("invalid syntax. Perhaps you forgot a comma?", a, b)
-            if not isinstance(a, ast.Name) or a.id not in ("print", "exec")
+            if not isinstance(a, ExprNodes.NameNode) or a.id not in ("print", "exec")
             else None
         )
      }
