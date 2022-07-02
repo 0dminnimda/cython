@@ -33,7 +33,7 @@ EXPR_NAME_MAPPING = {
     ast.Subscript: "subscript",
     ast.Starred: "starred",
     ExprNodes.NameNode: "name",
-    ast.List: "list",
+    ExprNodes.ListNode: "list",
     ast.Tuple: "tuple",
     ast.Lambda: "lambda",
     ast.Call: "function call",
@@ -172,7 +172,7 @@ class Parser(Parser):
                 return None
 
             return node
-        elif isinstance(node, (ExprNodes.NameNode, ast.Subscript, ast.Attribute)):
+        elif isinstance(node, (ast.Name, ast.Subscript, ast.Attribute)):
             return None
         else:
             return node
@@ -5932,7 +5932,7 @@ class CythonParser(Parser):
         return None;
 
     @memoize
-    def list(self) -> Optional[ast . List]:
+    def list(self) -> Optional[ExprNodes . ListNode]:
         # list: '[' star_named_expressions? ']'
         mark = self._mark()
         tok = self._tokenizer.peek()
@@ -5951,7 +5951,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . List ( elts = a or [] , ctx = Load , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . ListNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , args = a or [] );
         self._reset(mark)
         return None;
 
@@ -6751,7 +6751,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . List ( elts = a , ctx = Store , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . ListNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , args = a );
         self._reset(mark)
         return None;
 
@@ -7088,7 +7088,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ast . List ( elts = a , ctx = Del , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset );
+            return ExprNodes . ListNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , args = a );
         self._reset(mark)
         return None;
 

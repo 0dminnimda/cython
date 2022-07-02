@@ -27,7 +27,7 @@ EXPR_NAME_MAPPING = {
     ast.Subscript: "subscript",
     ast.Starred: "starred",
     ExprNodes.NameNode: "name",
-    ast.List: "list",
+    ExprNodes.ListNode: "list",
     ast.Tuple: "tuple",
     ast.Lambda: "lambda",
     ast.Call: "function call",
@@ -166,7 +166,7 @@ class Parser(Parser):
                 return None
 
             return node
-        elif isinstance(node, (ExprNodes.NameNode, ast.Subscript, ast.Attribute)):
+        elif isinstance(node, (ast.Name, ast.Subscript, ast.Attribute)):
             return None
         else:
             return node
@@ -1403,8 +1403,8 @@ lambda_param[ast.arg]: a=NAME {
 
 strings[ast.Str] (memo): a=STRING+ { self.make_string(a, self.pos(LOCATIONS)) }
 
-list[ast.List]:
-    | '[' a=[star_named_expressions] ']' { ast.List(elts=a or [], ctx=Load, LOCATIONS) }
+list[ExprNodes.ListNode]:
+    | '[' a=[star_named_expressions] ']' { ExprNodes.ListNode(self.pos(LOCATIONS), args=a or []) }
 
 tuple[ast.Tuple]:
     | '(' a=[y=star_named_expression ',' z=[star_named_expressions] { [y] + (z or []) } ] ')' {
@@ -1536,7 +1536,7 @@ star_atom:
     | a=NAME { self.make_name(a) }
     | '(' a=target_with_star_atom ')' { self.set_expr_context(a, Store) }
     | '(' a=[star_targets_tuple_seq] ')' { ast.Tuple(elts=a, ctx=Store, LOCATIONS) }
-    | '[' a=[star_targets_list_seq] ']' {  ast.List(elts=a, ctx=Store, LOCATIONS) }
+    | '[' a=[star_targets_list_seq] ']' { ExprNodes.ListNode(self.pos(LOCATIONS), args=a) }
 
 single_target:
     | single_subscript_attribute_target
@@ -1578,7 +1578,7 @@ del_t_atom:
     | a=NAME { self.make_name(a) }
     | '(' a=del_target ')' { self.set_expr_context(a, Del) }
     | '(' a=[del_targets] ')' { ast.Tuple(elts=a, ctx=Del, LOCATIONS) }
-    | '[' a=[del_targets] ']' { ast.List(elts=a, ctx=Del, LOCATIONS) }
+    | '[' a=[del_targets] ']' { ExprNodes.ListNode(self.pos(LOCATIONS), args=a) }
 
 
 # TYPING ELEMENTS
