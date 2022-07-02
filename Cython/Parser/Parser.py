@@ -196,7 +196,7 @@ class Parser(Parser):
         node.ctx = context
         return node
 
-    def generate_ast_for_number(self, number):
+    def make_number(self, number):
         if len(number.pairs) == 0:
             self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
 
@@ -235,7 +235,7 @@ class Parser(Parser):
 
         self.raise_initernal_error("NUMBER token is expected to be one of the types 'INT', 'FLOAT', 'IMAG', found %r" % pair[0])
 
-    def generate_ast_for_real(self, number):
+    def make_real(self, number):
         if len(number.pairs) == 0:
             self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
         pair = number.pairs[0]
@@ -243,7 +243,7 @@ class Parser(Parser):
             self.raise_syntax_error_known_location("real number required in complex literal", number)
         return ExprNodes.FloatNode(self.tok_pos(number), value=pair[1])
 
-    def generate_ast_for_imaginary(self, number):
+    def make_imaginary(self, number):
         if len(number.pairs) == 0:
             self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
         value = number.pairs[0]
@@ -251,7 +251,7 @@ class Parser(Parser):
             self.raise_syntax_error_known_location("imaginary number required in complex literal", number)
         return ExprNodes.ImagNode(self.tok_pos(number), value=pair[1])
 
-    def generate_ast_for_string(self, tokens, pos):
+    def make_string(self, tokens, pos):
         """Generate AST nodes for strings."""
         line_offset = tokens[0].start[0]
         line = line_offset
@@ -287,7 +287,7 @@ class Parser(Parser):
         else:
             self.streamer.error("invalid string kind '%s'" % kind)
 
-    def node_for_name(self, name):
+    def make_name(self, name):
         # Adapted from Cython.Compiler.Parsing.p_name
         pos = self.tok_pos(name)
         if not self.streamer.compile_time_expr and name.string in self.streamer.compile_time_env:
@@ -3465,7 +3465,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            return self . generate_ast_for_number ( a );
+            return self . make_number ( a );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -3478,7 +3478,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ExprNodes . UnaryMinusNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , operand = self . generate_ast_for_number ( a ) );
+            return ExprNodes . UnaryMinusNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , operand = self . make_number ( a ) );
         self._reset(mark)
         return None;
 
@@ -3523,7 +3523,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            return self . generate_ast_for_real ( real );
+            return self . make_real ( real );
         self._reset(mark)
         return None;
 
@@ -3538,7 +3538,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            return self . generate_ast_for_imaginary ( imag );
+            return self . make_imaginary ( imag );
         self._reset(mark)
         return None;
 
@@ -4396,7 +4396,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return ExprNodes . AssignmentExpressionNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , lhs = self . node_for_name ( a ) , rhs = b );
+            return ExprNodes . AssignmentExpressionNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , lhs = self . make_name ( a ) , rhs = b );
         self._reset(mark)
         if cut:
             return None;
@@ -5446,7 +5446,7 @@ class CythonParser(Parser):
             __true_result = True
             break
         if __true_result:
-            return self . generate_ast_for_number ( a );
+            return self . make_number ( a );
         self._reset(mark)
         __true_result = False
         while 1:  # for early false result as in the 'A and B'
@@ -5932,7 +5932,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . generate_ast_for_string ( a , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
+            return self . make_string ( a , self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) );
         self._reset(mark)
         return None;
 

@@ -190,7 +190,7 @@ class Parser(Parser):
         node.ctx = context
         return node
 
-    def generate_ast_for_number(self, number):
+    def make_number(self, number):
         if len(number.pairs) == 0:
             self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
 
@@ -229,7 +229,7 @@ class Parser(Parser):
 
         self.raise_initernal_error("NUMBER token is expected to be one of the types 'INT', 'FLOAT', 'IMAG', found %r" % pair[0])
 
-    def generate_ast_for_real(self, number):
+    def make_real(self, number):
         if len(number.pairs) == 0:
             self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
         pair = number.pairs[0]
@@ -237,7 +237,7 @@ class Parser(Parser):
             self.raise_syntax_error_known_location("real number required in complex literal", number)
         return ExprNodes.FloatNode(self.tok_pos(number), value=pair[1])
 
-    def generate_ast_for_imaginary(self, number):
+    def make_imaginary(self, number):
         if len(number.pairs) == 0:
             self.raise_initernal_error("NUMBER token is expected to have one pair, found 0")
         value = number.pairs[0]
@@ -245,7 +245,7 @@ class Parser(Parser):
             self.raise_syntax_error_known_location("imaginary number required in complex literal", number)
         return ExprNodes.ImagNode(self.tok_pos(number), value=pair[1])
 
-    def generate_ast_for_string(self, tokens, pos):
+    def make_string(self, tokens, pos):
         """Generate AST nodes for strings."""
         line_offset = tokens[0].start[0]
         line = line_offset
@@ -281,7 +281,7 @@ class Parser(Parser):
         else:
             self.streamer.error("invalid string kind '%s'" % kind)
 
-    def node_for_name(self, name):
+    def make_name(self, name):
         # Adapted from Cython.Compiler.Parsing.p_name
         pos = self.tok_pos(name)
         if not self.streamer.compile_time_expr and name.string in self.streamer.compile_time_env:
@@ -1004,9 +1004,9 @@ complex_number:
      }
 
 signed_number:
-    | a=NUMBER { self.generate_ast_for_number(a) }
+    | a=NUMBER { self.make_number(a) }
     | '-' a=NUMBER {
-        ExprNodes.UnaryMinusNode(self.pos(LOCATIONS), operand=self.generate_ast_for_number(a))
+        ExprNodes.UnaryMinusNode(self.pos(LOCATIONS), operand=self.make_number(a))
      }
 
 signed_real_number:
@@ -1014,10 +1014,10 @@ signed_real_number:
     | '-' real=real_number { ExprNodes.UnaryMinusNode(self.pos(LOCATIONS), operand=real) }
 
 real_number[ast.Constant]:
-    | real=NUMBER { self.generate_ast_for_real(real) }
+    | real=NUMBER { self.make_real(real) }
 
 imaginary_number[ast.Constant]:
-    | imag=NUMBER { self.generate_ast_for_imaginary(imag) }
+    | imag=NUMBER { self.make_imaginary(imag) }
 
 capture_pattern:
     | target=pattern_capture_target {
@@ -1171,7 +1171,7 @@ star_named_expression:
 
 assignment_expression:
     | a=NAME ':=' ~ b=expression {
-        ExprNodes.AssignmentExpressionNode(self.pos(LOCATIONS), lhs=self.node_for_name(a), rhs=b)
+        ExprNodes.AssignmentExpressionNode(self.pos(LOCATIONS), lhs=self.make_name(a), rhs=b)
      }
 
 named_expression:
@@ -1331,7 +1331,7 @@ atom:
     | 'False' { ExprNodes.BoolNode(self.pos(LOCATIONS), value=False) }
     | 'None' { ExprNodes.NoneNode(self.pos(LOCATIONS)) }
     | &STRING strings
-    | a=NUMBER { self.generate_ast_for_number(a) }
+    | a=NUMBER { self.make_number(a) }
     | &'(' (tuple | group | genexp)
     | &'[' (list | listcomp)
     | &'{' (dict | set | dictcomp | setcomp)
@@ -1412,7 +1412,7 @@ lambda_param[ast.arg]: a=NAME {
 # LITERALS
 # ========
 
-strings[ast.Str] (memo): a=STRING+ { self.generate_ast_for_string(a, self.pos(LOCATIONS)) }
+strings[ast.Str] (memo): a=STRING+ { self.make_string(a, self.pos(LOCATIONS)) }
 
 list[ast.List]:
     | '[' a=[star_named_expressions] ']' { ast.List(elts=a or [], ctx=Load, LOCATIONS) }
