@@ -273,6 +273,7 @@ class Parser(Parser):
         assert scanner.sy == "BEGIN_STRING"
         kind, bytes_value, unicode_value = Parsing.p_cat_string_literal(scanner)
 
+        # Adapted from Cython.Compiler.Parsing.p_atom
         if kind == "c":
             return ExprNodes.CharNode(pos, value = bytes_value)
         elif kind == "u":
@@ -285,6 +286,16 @@ class Parser(Parser):
             return ExprNodes.StringNode(pos, value = bytes_value, unicode_value = unicode_value)
         else:
             self.streamer.error("invalid string kind '%s'" % kind)
+
+    def node_for_name(self, name):
+        # Adapted from Cython.Compiler.Parsing.p_name
+        pos = self.tok_pos(name)
+        if not self.streamer.compile_time_expr and name.string in self.streamer.compile_time_env:
+            value = self.streamer.compile_time_env.lookup_here(name.string)
+            node = Parsing.wrap_compile_time_constant(pos, value)
+            if node is not None:
+                return node
+        return ExprNodes.NameNode(pos, name=name.string)
 
     def extract_import_level(self, tokens: List[tokenize.TokenInfo]) -> int:
         """Extract the relative import level from the tokens preceding the module name.
@@ -4385,7 +4396,7 @@ class CythonParser(Parser):
         if __true_result:
             tok = self._tokenizer.get_last_non_whitespace_token()
             end_lineno, end_col_offset = tok.end
-            return self . check_version ( ( 3 , 8 ) , "The ':=' operator is" , ast . NamedExpr ( target = ast . Name ( id = a . string , ctx = Store , lineno = a . start [0] , col_offset = a . start [1] , end_lineno = a . end [0] , end_col_offset = a . end [1] ) , value = b , lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset , ) );
+            return ExprNodes . AssignmentExpressionNode ( self . pos ( lineno=start_lineno, col_offset=start_col_offset, end_lineno=end_lineno, end_col_offset=end_col_offset ) , lhs = self . node_for_name ( a ) , rhs = b );
         self._reset(mark)
         if cut:
             return None;
