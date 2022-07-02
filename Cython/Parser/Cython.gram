@@ -100,12 +100,6 @@ class Parser(Parser):
 
         return res
 
-    def tok_pos(self, token):
-        return self.pos(*token.start, *token.end)
-
-    def pos(self, lineno, col_offset, end_lineno, end_col_offset):
-        return (self.source_desc, lineno, col_offset)
-
     def check_version(self, min_version: Tuple[int, ...], error_msg: str, node: Node) -> Node:
         """Check that the python version is high enough for a rule to apply.
 
@@ -116,14 +110,6 @@ class Parser(Parser):
             raise SyntaxError(
                 f"{error_msg} is only supported in Python {min_version} and above."
             )
-
-    def raise_indentation_error(self, msg: str) -> None:
-        """Raise an indentation error."""
-        last_token = self._tokenizer.diagnose()
-        args = (self.filename, last_token.start[0], last_token.start[1] + 1, last_token.line)
-        if sys.version_info >= (3, 10):
-            args += (last_token.end[0], last_token.end[1] + 1)
-        raise IndentationError(msg, args)
 
     def get_expr_name(self, node) -> str:
         """Get a descriptive name for an expression."""
@@ -189,6 +175,12 @@ class Parser(Parser):
         """Set the context (Load, Store, Del) of an ast node."""
         node.ctx = context
         return node
+
+    def tok_pos(self, token):
+        return self.pos(*token.start, *token.end)
+
+    def pos(self, lineno, col_offset, end_lineno, end_col_offset):
+        return (self.source_desc, lineno, col_offset)
 
     def make_number(self, number):
         if len(number.pairs) == 0:
@@ -366,6 +358,14 @@ class Parser(Parser):
     def raise_initernal_error(self, message):
         # TODO
         raise NotImplementedError
+
+    def raise_indentation_error(self, msg: str) -> None:
+        """Raise an indentation error."""
+        last_token = self._tokenizer.diagnose()
+        args = (self.filename, last_token.start[0], last_token.start[1] + 1, last_token.line)
+        if sys.version_info >= (3, 10):
+            args += (last_token.end[0], last_token.end[1] + 1)
+        raise IndentationError(msg, args)
 
     def _build_syntax_error(
         self,
